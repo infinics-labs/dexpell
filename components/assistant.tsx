@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Chat from "./chat";
+import { DexpellChat } from "./dexpell-chat";
 import useConversationStore from "@/stores/useConversationStore";
 import { Item, processMessages } from "@/lib/assistant";
 
@@ -49,12 +49,10 @@ export default function Assistant() {
   };
 
   return (
-    <div className="h-full p-4 w-full bg-white">
-      <Chat
-        items={chatMessages}
-        onSendMessage={handleSendMessage}
-        onApprovalResponse={handleApprovalResponse}
-      />
-    </div>
+    <DexpellChat
+      items={chatMessages}
+      onSendMessage={handleSendMessage}
+      onApprovalResponse={handleApprovalResponse}
+    />
   );
 }

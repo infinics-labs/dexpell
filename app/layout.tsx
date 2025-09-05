@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 const geistSans = localFont({
@@ -14,12 +16,41 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Responses starter app",
-  description: "Starter app for the OpenAI Responses API",
+  title: "OpenAI Chat Platform",
+  description: "Advanced AI chat platform powered by OpenAI",
   icons: {
     icon: "/openai_logo.svg",
   },
 };
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  shrinkToFit: false,
+  viewportFit: 'cover',
+};
+
+const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
+const DARK_THEME_COLOR = 'hsl(220deg 15% 8%)';
+const THEME_COLOR_SCRIPT = `\
+(function() {
+  var html = document.documentElement;
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', 'theme-color');
+    document.head.appendChild(meta);
+  }
+  function updateThemeColor() {
+    var isDark = html.classList.contains('dark');
+    meta.setAttribute('content', isDark ? '${DARK_THEME_COLOR}' : '${LIGHT_THEME_COLOR}');
+  }
+  var observer = new MutationObserver(updateThemeColor);
+  observer.observe(html, { attributes: true, attributeFilter: ['class'] });
+  updateThemeColor();
+})();`;
 
 export default function RootLayout({
   children,
@@ -27,13 +58,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <div className="flex h-screen bg-gray-200 w-full flex-col  text-stone-900">
-          <main>{children}</main>
-        </div>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: THEME_COLOR_SCRIPT,
+          }}
+        />
+      </head>
+      <body className="antialiased mobile-viewport-fix">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Toaster position="top-center" />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

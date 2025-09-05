@@ -14,12 +14,14 @@ interface ChatProps {
   items: Item[];
   onSendMessage: (message: string) => void;
   onApprovalResponse: (approve: boolean, id: string) => void;
+  showWelcome?: boolean;
 }
 
 const Chat: React.FC<ChatProps> = ({
   items,
   onSendMessage,
   onApprovalResponse,
+  showWelcome = false,
 }) => {
   const itemsEndRef = useRef<HTMLDivElement>(null);
   const [inputMessageText, setinputMessageText] = useState<string>("");
@@ -47,10 +49,10 @@ const Chat: React.FC<ChatProps> = ({
   }, [items]);
 
   return (
-    <div className="flex justify-center items-center size-full">
+    <div className={`flex justify-center items-center size-full bg-background ${showWelcome ? 'absolute inset-0' : ''}`}>
       <div className="flex grow flex-col h-full max-w-[750px] gap-2">
-        <div className="h-[90vh] overflow-y-scroll px-10 flex flex-col">
-          <div className="mt-auto space-y-5 pt-4">
+        <div className={`${showWelcome ? 'h-[calc(100vh-8rem)]' : 'h-[calc(100vh-8rem)]'} overflow-y-scroll px-4 sm:px-10 flex flex-col`}>
+          <div className={`${items.length > 0 ? 'mt-auto' : ''} space-y-5 pt-4`}>
             {items.map((item, index) => (
               <React.Fragment key={index}>
                 {item.type === "tool_call" ? (
@@ -80,10 +82,10 @@ const Chat: React.FC<ChatProps> = ({
             <div ref={itemsEndRef} />
           </div>
         </div>
-        <div className="flex-1 p-4 px-10">
+        <div className={`${showWelcome ? 'fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full max-w-[750px] px-4' : 'flex-1 p-4 px-4 sm:px-10'}`}>
           <div className="flex items-center">
             <div className="flex w-full items-center pb-4 md:pb-1">
-              <div className="flex w-full flex-col gap-1.5 rounded-[20px] p-2.5 pl-1.5 transition-colors bg-white border border-stone-200 shadow-sm">
+              <div className="flex w-full flex-col gap-1.5 rounded-[20px] p-2.5 pl-1.5 transition-colors bg-card border border-border shadow-lg">
                 <div className="flex items-end gap-1.5 md:gap-2 pl-4">
                   <div className="flex min-w-0 flex-1 flex-col">
                     <textarea
@@ -91,8 +93,8 @@ const Chat: React.FC<ChatProps> = ({
                       tabIndex={0}
                       dir="auto"
                       rows={2}
-                      placeholder="Message..."
-                      className="mb-2 resize-none border-0 focus:outline-none text-sm bg-transparent px-0 pb-6 pt-2"
+                      placeholder="Ask about shipping, logistics, or get a quote..."
+                      className="mb-2 resize-none border-0 focus:outline-none text-sm bg-transparent px-0 pb-6 pt-2 text-foreground placeholder:text-muted-foreground"
                       value={inputMessageText}
                       onChange={(e) => setinputMessageText(e.target.value)}
                       onKeyDown={handleKeyDown}
@@ -103,7 +105,7 @@ const Chat: React.FC<ChatProps> = ({
                   <button
                     disabled={!inputMessageText}
                     data-testid="send-button"
-                    className="flex size-8 items-end justify-center rounded-full bg-black text-white transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:outline-black disabled:bg-[#D7D7D7] disabled:text-[#f4f4f4] disabled:hover:opacity-100"
+                    className="flex size-8 items-end justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:outline-primary disabled:bg-muted disabled:text-muted-foreground disabled:hover:opacity-100"
                   onClick={() => {
                       onSendMessage(inputMessageText);
                       setinputMessageText("");

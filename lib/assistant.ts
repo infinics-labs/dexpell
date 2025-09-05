@@ -4,6 +4,7 @@ import useConversationStore from "@/stores/useConversationStore";
 import useToolsStore, { ToolsState } from "@/stores/useToolsStore";
 import { Annotation } from "@/components/annotations";
 import { functionsMap } from "@/config/functions";
+import { detectCargoConversation } from "./cargo-detector";
 
 const normalizeAnnotation = (annotation: any): Annotation => ({
   ...annotation,
@@ -78,6 +79,21 @@ export const handleTurn = async (
 ) => {
   try {
     const { googleIntegrationEnabled } = useToolsStore.getState();
+    const { assistantMode, setAssistantMode } = useConversationStore.getState();
+    
+    // Auto-detect cargo conversations and switch mode if needed
+    let effectiveMode = assistantMode;
+    if (assistantMode === 'general' && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user' && typeof lastMessage.content === 'string') {
+        const cargoDetection = detectCargoConversation(lastMessage.content);
+        if (cargoDetection.isCargo && cargoDetection.confidence !== 'low') {
+          effectiveMode = 'cargo';
+          setAssistantMode('cargo');
+          console.log("Auto-switched to cargo mode:", cargoDetection);
+        }
+      }
+    }
     // Get response from the API (defined in app/api/turn_response/route.ts)
     const response = await fetch("/api/turn_response", {
       method: "POST",
@@ -86,6 +102,7 @@ export const handleTurn = async (
         messages: messages,
         toolsState: toolsState,
         googleIntegrationEnabled,
+        assistantMode: effectiveMode,
       }),
     });
 

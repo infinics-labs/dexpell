@@ -2,6 +2,8 @@
 // Define one function per tool call - each tool call should have a matching function
 // Parameters for a tool call are passed as an object to the corresponding function
 
+import { cargoFunctions } from './cargo-functions';
+
 export const get_weather = async ({
   location,
   unit,
@@ -24,4 +26,5 @@ export const get_joke = async () => {
 export const functionsMap = {
   get_weather: get_weather,
   get_joke: get_joke,
+  ...cargoFunctions,
 };

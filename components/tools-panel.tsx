@@ -7,6 +7,7 @@ import McpConfig from "./mcp-config";
 import PanelConfig from "./panel-config";
 import useToolsStore from "@/stores/useToolsStore";
 import GoogleIntegrationPanel from "@/components/google-integration";
+import { AssistantModeSelector } from "./assistant-mode-selector";
 
 export default function ContextPanel() {
   const {
@@ -32,8 +33,12 @@ export default function ContextPanel() {
       .catch(() => setOauthConfigured(false));
   }, []);
   return (
-    <div className="h-full p-8 w-full bg-[#f9f9f9] rounded-t-xl md:rounded-none border-l-1 border-stone-100">
+    <div className="h-full p-8 w-full bg-muted/50 rounded-t-xl md:rounded-none border-l border-border">
       <div className="flex flex-col overflow-y-scroll h-full">
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-foreground mb-2">Assistant Mode</h3>
+          <AssistantModeSelector />
+        </div>
         <PanelConfig
           title="File Search"
           tooltip="Allows to search a knowledge base (vector store)"
