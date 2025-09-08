@@ -1,10 +1,12 @@
 // Cargo pricing functions for Dexpell
 import { cargoPricing } from './functions/cargo-pricing';
 import { cargoMultiPricing } from './functions/cargo-multi-pricing';
+import { cargoDraftPricing } from './functions/cargo-draft-pricing';
 
 export const cargoFunctions = {
   cargo_pricing: cargoPricing,
   cargo_multi_pricing: cargoMultiPricing,
+  cargo_draft_pricing: cargoDraftPricing,
 };
 
 // Export the function definitions for the Responses API
@@ -85,6 +87,37 @@ export const cargoFunctionDefinitions = [
         },
       },
       required: ['content'],
+    },
+  },
+  {
+    type: 'function' as const,
+    name: 'cargo_draft_pricing',
+    description: 'Get DRAFT cargo shipping price based on actual weight only (before dimensions are provided). This provides an initial estimate to customers before they provide box dimensions. Use this when customer provides weight but not yet dimensions.',
+    parameters: {
+      type: 'object',
+      properties: {
+        content: {
+          type: 'string',
+          description: 'Description of what is being shipped (supports cargo terminology like "FAK", "Freight All Kinds", "General Cargo")',
+        },
+        country: {
+          type: 'string',
+          description: 'The destination country',
+        },
+        weight: {
+          type: 'number',
+          description: 'The actual weight of a single package in kilograms',
+        },
+        quantity: {
+          type: 'number',
+          description: 'Number of identical boxes/packages (default is 1)',
+        },
+        carrier: {
+          type: 'string',
+          description: 'Optional carrier preference: "UPS" or "DHL"',
+        },
+      },
+      required: ['content', 'country', 'weight'],
     },
   },
 ];

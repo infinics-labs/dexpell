@@ -2,29 +2,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
-// Call the single carrier pricing API
-async function callCargoPricing(params: {
-  content: string;
-  country?: string;
-  weight?: number;
-  length?: number;
-  width?: number;
-  height?: number;
-  quantity?: number;
-}) {
-  const searchParams = new URLSearchParams();
-  searchParams.append('content', params.content);
-  if (params.country) searchParams.append('country', params.country);
-  if (params.weight !== undefined) searchParams.append('weight', params.weight.toString());
-  if (params.length !== undefined) searchParams.append('length', params.length.toString());
-  if (params.width !== undefined) searchParams.append('width', params.width.toString());
-  if (params.height !== undefined) searchParams.append('height', params.height.toString());
-  if (params.quantity !== undefined) searchParams.append('quantity', params.quantity.toString());
-
-  const response = await fetch(`http://localhost:3000/api/functions/cargo_pricing?${searchParams.toString()}`);
-  if (!response.ok) throw new Error(`API Error: ${response.status}`);
-  return await response.json();
-}
+// Import the shared pricing logic
+import { calculateUPSDHLPricing, calculateChargeableWeight, calculateTotalChargeableWeight } from '@/lib/cargo-pricing-core';
 
 // Parse ARAMEX countries CSV
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -192,9 +171,20 @@ export async function GET(request: Request) {
   const quantity = searchParams.get('quantity') ? parseInt(searchParams.get('quantity')!) : 1;
 
   try {
-    // If only content is provided, delegate to single carrier function
+    // If only content is provided, just return content check result
     if (!country && !weight && !length && !width && !height) {
-      return NextResponse.json(await callCargoPricing({ content, quantity }));
+      // Simple content check without pricing
+      if (content.toLowerCase().includes('perfume') || content.toLowerCase().includes('liquid')) {
+        return NextResponse.json({
+          allowed: false,
+          message: 'We apologize, but we cannot ship this type of product. We do not accept liquids, food items, chemicals, cosmetics (including perfumes and deodorants), medicines, or branded products.',
+        });
+      }
+      return NextResponse.json({
+        allowed: true,
+        needsInfo: true,
+        message: 'Please provide the destination country to calculate shipping prices.',
+      });
     }
 
     // If country is not provided, return need info
@@ -233,18 +223,15 @@ export async function GET(request: Request) {
 
         // Calculate ARAMEX pricing
         try {
-          // Calculate chargeable weight
-          let chargeableWeightPerBox = weight || 0;
-          if (length && width && height) {
-            const volumetricWeight = (length * width * height) / 5000;
-            chargeableWeightPerBox = weight ? Math.max(weight, volumetricWeight) : volumetricWeight;
-          }
+          // Calculate chargeable weight using shared logic
+          const weightCalc = calculateChargeableWeight(weight, length, width, height);
 
-          if (!chargeableWeightPerBox || chargeableWeightPerBox === 0) {
+          if (!weightCalc.chargeableWeight || weightCalc.chargeableWeight === 0) {
             continue;
           }
 
-          const totalChargeableWeight = Math.ceil(chargeableWeightPerBox * quantity);
+          // Calculate total chargeable weight and round UP the total
+          const totalChargeableWeight = calculateTotalChargeableWeight(weightCalc.chargeableWeight, quantity);
           
           const { prices, weights } = await parseAramexPricing();
           const price = getAramexPrice(totalChargeableWeight, countryKey!, prices, weights);
@@ -263,31 +250,38 @@ export async function GET(request: Request) {
           console.error('ARAMEX pricing error:', error);
         }
       } else {
-        // Get UPS/DHL pricing
-        const result = await callCargoPricing({
-          content,
-          country,
-          weight,
-          length,
-          width,
-          height,
-          quantity,
-        });
-
-        if (result.success && result.data) {
-          // Override carrier if specific one was requested
-          const actualCarrier = carrier as 'UPS' | 'DHL';
-          result.data.carrier = actualCarrier;
-          
-          quotes.push({
-            carrier: actualCarrier,
-            available: true,
-            pricePerBox: result.data.pricePerBox,
-            totalPrice: result.data.totalPrice,
-            serviceType: `${actualCarrier} Express`,
-            region: result.data.region,
+        // Get UPS/DHL pricing using shared core logic
+        try {
+          const result = await calculateUPSDHLPricing({
+            content,
+            country,
+            weight,
+            length,
+            width,
+            height,
+            quantity,
+            carrier: carrier as 'UPS' | 'DHL',
           });
-        } else if (result.error && result.message?.includes('not found in the')) {
+
+          if (result.success && result.data) {
+            quotes.push({
+              carrier: result.data.carrier,
+              available: true,
+              pricePerBox: result.data.pricePerBox,
+              totalPrice: result.data.totalPrice,
+              serviceType: result.data.serviceType,
+              region: result.data.region,
+            });
+          } else if (result.error && result.message?.includes('not found in the')) {
+            quotes.push({
+              carrier: carrier as 'UPS' | 'DHL',
+              available: false,
+              totalPrice: 0,
+              serviceType: `${carrier} Express`,
+            });
+          }
+        } catch (error) {
+          console.error(`${carrier} pricing error:`, error);
           quotes.push({
             carrier: carrier as 'UPS' | 'DHL',
             available: false,
@@ -300,13 +294,13 @@ export async function GET(request: Request) {
 
     // If no quotes were obtained, return the base result
     if (quotes.length === 0) {
-      return NextResponse.json(await callCargoPricing({ content, country, weight, length, width, height, quantity }));
+      const fallbackResult = await calculateUPSDHLPricing({ content, country, weight, length, width, height, quantity });
+      return NextResponse.json(fallbackResult);
     }
 
-    // Calculate volumetric weight for display
-    const volumetricWeight = length && width && height ? (length * width * height) / 5000 : undefined;
-    const chargeableWeightPerBox = weight && volumetricWeight ? Math.max(weight, volumetricWeight) : (weight || volumetricWeight || 0);
-    const totalChargeableWeight = Math.ceil(chargeableWeightPerBox * quantity);
+    // Calculate weights using shared logic
+    const weightCalc = calculateChargeableWeight(weight, length, width, height);
+    const totalChargeableWeight = calculateTotalChargeableWeight(weightCalc.chargeableWeight, quantity);
 
     return NextResponse.json({
       allowed: true,
@@ -317,9 +311,9 @@ export async function GET(request: Request) {
         quotes,
         quantity,
         chargeableWeight: totalChargeableWeight,
-        chargeableWeightPerBox,
+        chargeableWeightPerBox: weightCalc.chargeableWeight,
         actualWeight: weight,
-        volumetricWeight,
+        volumetricWeight: weightCalc.volumetricWeight,
         length,
         width,
         height,
