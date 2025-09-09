@@ -33,12 +33,16 @@ function PureDexpellMessages({
     scrollToBottom();
   }, [messages]);
 
+  // Check if we should show suggested actions (only initial assistant message, no user messages)
+  const shouldShowSuggestedActions = messages.length <= 1 && 
+    (messages.length === 0 || (messages.length === 1 && messages[0].type === 'message' && messages[0].role === 'assistant'));
+
   return (
     <div className="flex flex-col min-w-0 gap-4 sm:gap-6 flex-1 overflow-y-scroll pt-3 sm:pt-4 px-3 sm:px-4 relative">
-      {messages.length === 0 && (
+      {shouldShowSuggestedActions && (
         <>
           <DexpellGreeting />
-          <div className="max-w-3xl mx-auto px-8 pb-8">
+          <div className="flex mx-auto px-3 sm:px-4 pb-6 w-full md:max-w-3xl">
             <DexpellSuggestedActions onSendMessage={onSendMessage} />
           </div>
         </>

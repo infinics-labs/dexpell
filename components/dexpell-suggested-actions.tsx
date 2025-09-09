@@ -50,28 +50,31 @@ function PureDexpellSuggestedActions({
   return (
     <div
       data-testid="suggested-actions"
-      className="grid sm:grid-cols-2 gap-2 w-full"
+      className="grid grid-cols-2 gap-3 w-full"
     >
       {suggestedActions.map((suggestedAction, index) => (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          transition={{ delay: 0.05 * index }}
+          transition={{ delay: 0.05 * index, duration: 0.3 }}
           key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
         >
           <Button
             variant="ghost"
             onClick={() => {
               onSendMessage(suggestedAction.action);
             }}
-            className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
+            className="group text-left border border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-600 rounded-xl px-4 py-3 text-sm w-full h-auto justify-start items-center gap-3 transition-all duration-200 hover:shadow-md hover:scale-[1.01] bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-950/30 flex-row"
           >
-            <span className="font-medium">{suggestedAction.title}</span>
-            <span className="text-muted-foreground">
-              {suggestedAction.label}
-            </span>
+            <div className="flex flex-col gap-1 flex-1">
+              <span className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors text-sm">
+                {suggestedAction.title}
+              </span>
+              <span className="text-muted-foreground text-xs group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                {suggestedAction.label}
+              </span>
+            </div>
           </Button>
         </motion.div>
       ))}

@@ -48,11 +48,24 @@ export default function Assistant() {
     }
   };
 
+  const handleFileUpload = async (files: FileList) => {
+    // For now, we'll just show the file names in a message
+    const fileNames = Array.from(files).map(file => file.name).join(', ');
+    const fileMessage = `Files attached: ${fileNames}`;
+    
+    // You can extend this to actually process and upload the files
+    console.log('Files uploaded:', files);
+    
+    // For demo purposes, we'll send a message about the uploaded files
+    handleSendMessage(fileMessage);
+  };
+
   return (
     <DexpellChat
       items={chatMessages}
       onSendMessage={handleSendMessage}
       onApprovalResponse={handleApprovalResponse}
+      onFileUpload={handleFileUpload}
     />
   );
 }
