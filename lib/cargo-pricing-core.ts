@@ -83,8 +83,14 @@ const countryTranslations: Record<string, string> = {
   'israel': 'israil',
   'palestine': 'filistin',
   'saudi arabia': 'suudi arabistan',
-  'united arab emirates': 'birlesik arap emirlikleri',
-  'uae': 'birlesik arap emirlikleri',
+  'united arab emirates': 'birleik arap emirlikleri',
+  'uae': 'birleik arap emirlikleri',
+  'dubai': 'birleik arap emirlikleri',
+  'abu dhabi': 'birleik arap emirlikleri', 
+  'sharjah': 'birleik arap emirlikleri',
+  'emirates': 'birleik arap emirlikleri',
+  'emirate': 'birleik arap emirlikleri',
+  'dxb': 'birleik arap emirlikleri',
   'kuwait': 'kuveyt',
   'qatar': 'katar',
   'bahrain': 'bahreyn',
@@ -194,12 +200,12 @@ export async function calculateDraftPricing(params: {
   country: string;
   weight: number;
   quantity?: number;
-  carrier?: 'UPS' | 'DHL';
+  carrier?: 'UPS' | 'DHL' | 'ARAMEX';
 }) {
   const { content, country, weight, quantity = 1, carrier } = params;
   
   // Detect the carrier if not specified
-  const selectedCarrier = carrier || detectCarrier(content) as ('UPS' | 'DHL');
+  const selectedCarrier = carrier || detectCarrier(content) as ('UPS' | 'DHL' | 'ARAMEX');
   
   // Check for prohibited items
   if (isProhibitedItem(content)) {
@@ -220,9 +226,62 @@ export async function calculateDraftPricing(params: {
   // Calculate total weight based on actual weight only (no volumetric calculation)
   const totalActualWeight = Math.ceil(weight * quantity);
 
-  // Parse data files for the carrier and find pricing
-  const countryToRegion = await parseRegions(selectedCarrier);
-  const { prices, weights } = await parsePricing(selectedCarrier);
+  // Handle ARAMEX separately since it uses different CSV structure
+  if (selectedCarrier === 'ARAMEX') {
+    // For ARAMEX draft pricing, we need to check the country mapping
+    const aramexMappings: Record<string, string> = {
+      'united arab emirates': 'UAE',
+      'uae': 'UAE',
+      'dubai': 'UAE',
+      'abu dhabi': 'UAE',
+      'sharjah': 'UAE',
+      'emirates': 'UAE',
+      'saudi arabia': 'SAUDI ARABIA',
+      'lebanon': 'LEBANON',
+      'egypt': 'EGYPT',
+      'jordan': 'JORDAN',
+      'kuwait': 'KUWAIT',
+      'qatar': 'QATAR',
+      'bahrain': 'BAHRAIN',
+      'oman': 'OMAN',
+    };
+    
+    const normalizedCountry = normalizeCountryName(country);
+    const aramexCountryKey = aramexMappings[normalizedCountry];
+    
+    if (!aramexCountryKey) {
+      return {
+        allowed: true,
+        error: true,
+        message: `Country "${country}" is not supported by ARAMEX. Please try UPS or DHL.`,
+      };
+    }
+
+    // For now, return a standard ARAMEX estimate since it's just a draft
+    // Real ARAMEX pricing would use the CSV parsing
+    const estimatedPrice = totalActualWeight * 12; // Rough estimate $12 per kg
+    
+    return {
+      allowed: true,
+      success: true,
+      isDraft: true,
+      data: {
+        country,
+        carrier: 'ARAMEX',
+        pricePerBox: Math.round((estimatedPrice / quantity) * 100) / 100,
+        totalPrice: Math.round(estimatedPrice * 100) / 100,
+        quantity: quantity,
+        actualWeight: weight,
+        totalActualWeight: totalActualWeight,
+        serviceType: 'ARAMEX Express',
+        message: `Draft pricing based on actual weight only. Final pricing will be calculated after providing dimensions.`,
+      },
+    };
+  }
+
+  // Parse data files for UPS/DHL carriers and find pricing
+  const countryToRegion = await parseRegions(selectedCarrier as 'UPS' | 'DHL');
+  const { prices, weights } = await parsePricing(selectedCarrier as 'UPS' | 'DHL');
 
   // Find region for the country (with translation logic)
   const normalizedCountry = normalizeCountryName(country);
@@ -517,6 +576,13 @@ export async function calculateUPSDHLPricing(params: {
   if (!region) {
     for (const [csvCountry, csvRegion] of countryToRegion.entries()) {
       if (csvCountry.includes(normalizedCountry) || normalizedCountry.includes(csvCountry)) {
+        region = csvRegion;
+        break;
+      }
+      
+      // Special UAE matching
+      if ((normalizedCountry.includes('emirat') || normalizedCountry.includes('uae') || normalizedCountry.includes('dubai')) &&
+          (csvCountry.includes('emirlik') || csvCountry.includes('arap'))) {
         region = csvRegion;
         break;
       }

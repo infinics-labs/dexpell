@@ -12,7 +12,7 @@ export const cargoDraftPricing = async ({
   country: string;
   weight: number;
   quantity?: number;
-  carrier?: 'UPS' | 'DHL';
+  carrier?: 'UPS' | 'DHL' | 'ARAMEX';
 }) => {
   try {
     const params = new URLSearchParams();

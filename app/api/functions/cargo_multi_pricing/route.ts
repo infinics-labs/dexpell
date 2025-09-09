@@ -133,6 +133,11 @@ async function isAramexSupported(country: string): Promise<{ supported: boolean;
   const aramexMappings: Record<string, string> = {
     'united arab emirates': 'UAE',
     'birleşik arap emirlikleri': 'UAE',
+    'uae': 'UAE',
+    'dubai': 'UAE',
+    'abu dhabi': 'UAE',
+    'sharjah': 'UAE',
+    'emirates': 'UAE',
     'saudi arabia': 'SAUDI ARABIA',
     'suudi arabistan': 'SAUDI ARABIA',
     'lebanon': 'LEBANON',

@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const country = searchParams.get('country') || undefined;
   const weight = searchParams.get('weight') ? parseFloat(searchParams.get('weight')!) : undefined;
   const quantity = searchParams.get('quantity') ? parseInt(searchParams.get('quantity')!) : 1;
-  const carrier = searchParams.get('carrier') as 'UPS' | 'DHL' | undefined;
+  const carrier = searchParams.get('carrier') as 'UPS' | 'DHL' | 'ARAMEX' | undefined;
 
   try {
     // Validate required parameters

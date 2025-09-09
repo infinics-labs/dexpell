@@ -114,7 +114,7 @@ export const cargoFunctionDefinitions = [
         },
         carrier: {
           type: 'string',
-          description: 'Optional carrier preference: "UPS" or "DHL"',
+          description: 'Optional carrier preference: "UPS", "DHL", or "ARAMEX"',
         },
       },
       required: ['content', 'country', 'weight'],
