@@ -194,6 +194,86 @@ export function calculateTotalChargeableWeight(
   return Math.ceil(totalChargeableWeight);
 }
 
+// Interface for individual box details
+export interface BoxDetails {
+  weight: number;
+  length: number;
+  width: number;
+  height: number;
+  quantity?: number;
+}
+
+// Interface for box calculation result
+export interface BoxCalculationResult {
+  boxNumber: number;
+  actualWeight: number;
+  volumetricWeight: number;
+  chargeableWeight: number;
+  quantity: number;
+  totalChargeableWeight: number;
+  dimensions: string;
+}
+
+// Calculate mixed boxes with different dimensions and weights
+export function calculateMixedBoxes(boxes: BoxDetails[]): {
+  totalChargeableWeight: number;
+  totalRoundedWeight: number;
+  boxCalculations: BoxCalculationResult[];
+  summary: {
+    totalBoxes: number;
+    totalActualWeight: number;
+    totalVolumetricWeight: number;
+  };
+} {
+  const boxCalculations: BoxCalculationResult[] = [];
+  let totalChargeableWeightSum = 0;
+  let totalActualWeight = 0;
+  let totalVolumetricWeight = 0;
+  let totalBoxCount = 0;
+
+  boxes.forEach((box, index) => {
+    // Calculate volumetric weight for this box
+    const volumetricWeight = (box.length * box.width * box.height) / 5000;
+    
+    // Find chargeable weight (max of actual vs volumetric)
+    const chargeableWeight = Math.max(box.weight, volumetricWeight);
+    
+    // Calculate quantity (default 1 if not specified)
+    const quantity = box.quantity || 1;
+    
+    // Calculate total chargeable weight for this box type
+    const totalChargeableWeightForBoxType = chargeableWeight * quantity;
+    
+    // Add to running sum
+    totalChargeableWeightSum += totalChargeableWeightForBoxType;
+    totalActualWeight += box.weight * quantity;
+    totalVolumetricWeight += volumetricWeight * quantity;
+    totalBoxCount += quantity;
+
+    // Store calculation details
+    boxCalculations.push({
+      boxNumber: index + 1,
+      actualWeight: box.weight,
+      volumetricWeight: Math.round(volumetricWeight * 100) / 100,
+      chargeableWeight: Math.round(chargeableWeight * 100) / 100,
+      quantity: quantity,
+      totalChargeableWeight: Math.round(totalChargeableWeightForBoxType * 100) / 100,
+      dimensions: `${box.length}×${box.width}×${box.height}cm`
+    });
+  });
+
+  return {
+    totalChargeableWeight: Math.round(totalChargeableWeightSum * 100) / 100,
+    totalRoundedWeight: Math.ceil(totalChargeableWeightSum),
+    boxCalculations,
+    summary: {
+      totalBoxes: totalBoxCount,
+      totalActualWeight: Math.round(totalActualWeight * 100) / 100,
+      totalVolumetricWeight: Math.round(totalVolumetricWeight * 100) / 100,
+    }
+  };
+}
+
 // Calculate DRAFT pricing based on actual weight only (no dimensions)
 export async function calculateDraftPricing(params: {
   content: string;
@@ -508,6 +588,116 @@ function getPrice(
   }
 
   return null;
+}
+
+// Mixed box pricing calculation function for UPS/DHL
+export async function calculateMixedBoxPricing(params: {
+  content: string;
+  country: string;
+  boxes: BoxDetails[];
+  carrier?: 'UPS' | 'DHL';
+}) {
+  const { content, country, boxes } = params;
+  
+  // Detect the carrier from the content if not specified
+  const carrier = params.carrier || detectCarrier(content) as ('UPS' | 'DHL');
+  
+  // Check for prohibited items
+  if (isProhibitedItem(content)) {
+    return {
+      allowed: false,
+      message: 'We apologize, but we cannot ship this type of product. We do not accept liquids, food items, chemicals, cosmetics (including perfumes and deodorants), medicines, or branded products from companies like Nike, Adidas, Timberland, and other major brands. Please contact us if you have any questions about acceptable items.',
+    };
+  }
+
+  // Validate boxes array
+  if (!boxes || boxes.length === 0) {
+    return {
+      allowed: true,
+      needsInfo: true,
+      message: 'Please provide box details (weight and dimensions for each box).',
+    };
+  }
+
+  // Calculate mixed boxes
+  const mixedBoxCalculation = calculateMixedBoxes(boxes);
+  
+  // Parse data files for the carrier and find pricing
+  if (carrier !== 'UPS' && carrier !== 'DHL') {
+    return {
+      allowed: true,
+      error: true,
+      message: 'This function only supports UPS and DHL carriers. For ARAMEX, please use the multi-carrier pricing function.',
+    };
+  }
+
+  const countryToRegion = await parseRegions(carrier);
+  const { prices, weights } = await parsePricing(carrier);
+
+  // Find region for the country
+  const normalizedCountry = normalizeCountryName(country);
+  let region = countryToRegion.get(normalizedCountry);
+
+  if (!region) {
+    // Try translation from English to Turkish
+    const translatedCountry = countryTranslations[normalizedCountry];
+    if (translatedCountry) {
+      region = countryToRegion.get(translatedCountry);
+    }
+  }
+
+  // If still not found, try fuzzy matching
+  if (!region) {
+    for (const [csvCountry, csvRegion] of countryToRegion.entries()) {
+      if (csvCountry.includes(normalizedCountry) || normalizedCountry.includes(csvCountry)) {
+        region = csvRegion;
+        break;
+      }
+      
+      // Special UAE matching
+      if ((normalizedCountry.includes('emirat') || normalizedCountry.includes('uae') || normalizedCountry.includes('dubai')) &&
+          (csvCountry.includes('emirlik') || csvCountry.includes('arap'))) {
+        region = csvRegion;
+        break;
+      }
+    }
+  }
+
+  if (!region) {
+    return {
+      allowed: true,
+      error: true,
+      message: `Country "${country}" not found in the ${carrier} shipping regions. Please check the country name and try again.`,
+    };
+  }
+
+  // Get price for the total rounded chargeable weight and region
+  const price = getPrice(mixedBoxCalculation.totalRoundedWeight, region, prices, weights);
+
+  if (price === null) {
+    return {
+      allowed: true,
+      error: true,
+      message: `Unable to calculate price for ${mixedBoxCalculation.totalRoundedWeight}kg to region ${region}. Please contact support.`,
+    };
+  }
+
+  const totalPrice = Math.round(price * 100) / 100;
+
+  return {
+    allowed: true,
+    success: true,
+    data: {
+      country,
+      region,
+      carrier,
+      totalPrice: totalPrice,
+      mixedBoxCalculation,
+      chargeableWeight: mixedBoxCalculation.totalRoundedWeight,
+      content,
+      serviceType: `${carrier} Express`,
+    },
+  };
 }
 
 // Core pricing calculation function for UPS/DHL

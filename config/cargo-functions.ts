@@ -2,11 +2,13 @@
 import { cargoPricing } from './functions/cargo-pricing';
 import { cargoMultiPricing } from './functions/cargo-multi-pricing';
 import { cargoDraftPricing } from './functions/cargo-draft-pricing';
+import { cargoMixedPricing } from './functions/cargo-mixed-pricing';
 
 export const cargoFunctions = {
   cargo_pricing: cargoPricing,
   cargo_multi_pricing: cargoMultiPricing,
   cargo_draft_pricing: cargoDraftPricing,
+  cargo_mixed_pricing: cargoMixedPricing,
 };
 
 // Export the function definitions for the Responses API
@@ -48,6 +50,7 @@ export const cargoFunctionDefinitions = [
         },
       },
       required: ['content'],
+      additionalProperties: false,
     },
   },
   {
@@ -87,6 +90,7 @@ export const cargoFunctionDefinitions = [
         },
       },
       required: ['content'],
+      additionalProperties: false,
     },
   },
   {
@@ -118,6 +122,58 @@ export const cargoFunctionDefinitions = [
         },
       },
       required: ['content', 'country', 'weight'],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: 'function' as const,
+    name: 'cargo_mixed_pricing',
+    description: 'Calculate shipping prices for multiple boxes with different dimensions and weights. Use this when customer has boxes of different sizes/weights. Each box is calculated individually (weight vs volumetric weight) then summed for final pricing.',
+    parameters: {
+      type: 'object',
+      properties: {
+        content: {
+          type: 'string',
+          description: 'Description of what is being shipped',
+        },
+        country: {
+          type: 'string',
+          description: 'The destination country',
+        },
+        boxes: {
+          type: 'array',
+          description: 'Array of box details with different dimensions and weights',
+          items: {
+            type: 'object',
+            properties: {
+              weight: {
+                type: 'number',
+                description: 'Actual weight of this box in kilograms',
+              },
+              length: {
+                type: 'number',
+                description: 'Length of this box in centimeters',
+              },
+              width: {
+                type: 'number',
+                description: 'Width of this box in centimeters',
+              },
+              height: {
+                type: 'number',
+                description: 'Height of this box in centimeters',
+              },
+              quantity: {
+                type: 'number',
+                description: 'Number of identical boxes of this type (default 1)',
+              },
+            },
+            required: ['weight', 'length', 'width', 'height'],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ['content', 'country', 'boxes'],
+      additionalProperties: false,
     },
   },
 ];

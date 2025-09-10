@@ -25,10 +25,11 @@ export const toolsList = [
     description: "Get a programming joke",
     parameters: {},
   },
-  // Add cargo functions
+  // Add cargo functions with proper structure
   ...cargoFunctionDefinitions.map(fn => ({
     name: fn.name,
     description: fn.description,
     parameters: fn.parameters.properties,
+    requiredFields: fn.parameters.required || [],
   })),
 ];

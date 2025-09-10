@@ -60,10 +60,10 @@ export const getTools = async (toolsState: ToolsState) => {
           parameters: {
             type: "object",
             properties: { ...tool.parameters },
-            required: Object.keys(tool.parameters),
+            required: (tool as any).requiredFields || Object.keys(tool.parameters),
             additionalProperties: false,
           },
-          strict: true,
+          strict: false,
         };
       })
     );
