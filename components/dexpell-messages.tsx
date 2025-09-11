@@ -42,39 +42,47 @@ function PureDexpellMessages({
       {shouldShowSuggestedActions && (
         <>
           <DexpellGreeting />
-          <div className="flex mx-auto px-3 sm:px-4 pb-6 w-full md:max-w-3xl">
+          <div className="flex mx-auto px-3 sm:px-4 pb-6 w-full md:max-w-2xl">
             <DexpellSuggestedActions onSendMessage={onSendMessage} />
           </div>
         </>
       )}
 
-      {messages.map((item, index) => (
-        <React.Fragment key={index}>
-          {item.type === "tool_call" ? (
-            <ToolCall toolCall={item} />
-          ) : item.type === "message" ? (
-            <div className="flex flex-col gap-1">
-              <Message message={item} />
-              {item.content &&
-                item.content[0].annotations &&
-                item.content[0].annotations.length > 0 && (
-                  <Annotations
-                    annotations={item.content[0].annotations}
-                  />
-                )}
-            </div>
-          ) : item.type === "mcp_list_tools" ? (
-            <McpToolsList item={item} />
-          ) : item.type === "mcp_approval_request" ? (
-            <McpApproval
-              item={item as McpApprovalRequestItem}
-              onRespond={onApprovalResponse}
-            />
-          ) : null}
-        </React.Fragment>
-      ))}
+      <div className="max-w-2xl mx-auto w-full">
+        {messages.map((item, index) => (
+          <React.Fragment key={index}>
+            {item.type === "tool_call" ? (
+              <div className="mb-4">
+                <ToolCall toolCall={item} />
+              </div>
+            ) : item.type === "message" ? (
+              <div className="flex flex-col gap-1 mb-4">
+                <Message message={item} />
+                {item.content &&
+                  item.content[0].annotations &&
+                  item.content[0].annotations.length > 0 && (
+                    <Annotations
+                      annotations={item.content[0].annotations}
+                    />
+                  )}
+              </div>
+            ) : item.type === "mcp_list_tools" ? (
+              <McpToolsList item={item} />
+            ) : item.type === "mcp_approval_request" ? (
+              <McpApproval
+                item={item as McpApprovalRequestItem}
+                onRespond={onApprovalResponse}
+              />
+            ) : null}
+          </React.Fragment>
+        ))}
+      </div>
 
-      {isAssistantLoading && <LoadingMessage />}
+      {isAssistantLoading && (
+        <div className="max-w-2xl mx-auto w-full">
+          <LoadingMessage />
+        </div>
+      )}
 
       <motion.div
         ref={messagesEndRef}

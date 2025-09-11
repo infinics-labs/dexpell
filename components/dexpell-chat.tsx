@@ -29,7 +29,7 @@ export const DexpellChat: React.FC<DexpellChatProps> = ({
         onApprovalResponse={onApprovalResponse}
       />
 
-      <form className="flex mx-auto px-3 sm:px-4 bg-background pb-3 sm:pb-4 md:pb-6 gap-2 w-full md:max-w-3xl safe-area-inset-bottom">
+      <form className="flex mx-auto px-3 sm:px-4 bg-background pb-3 sm:pb-4 md:pb-6 gap-2 w-full md:max-w-2xl safe-area-inset-bottom">
         <DexpellMultimodalInput
           onSendMessage={onSendMessage}
           onFileUpload={onFileUpload}

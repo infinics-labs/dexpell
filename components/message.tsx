@@ -40,6 +40,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
                         /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(a.filename)
                     )
                     .map((a, i) => (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         key={i}
                         src={`/api/container_files/content?file_id=${a.fileId}${a.containerId ? `&container_id=${a.containerId}` : ""}${a.filename ? `&filename=${encodeURIComponent(a.filename)}` : ""}`}

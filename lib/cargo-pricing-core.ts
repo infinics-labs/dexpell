@@ -32,7 +32,22 @@ export function normalizeCountryName(country: string): string {
     }
   }
   
-  // Clean up special characters and normalize spaces
+  // Normalize Turkish characters to ASCII equivalents
+  normalizedCountry = normalizedCountry
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/İ/g, 'i')
+    .replace(/Ğ/g, 'g')
+    .replace(/Ü/g, 'u')
+    .replace(/Ş/g, 's')
+    .replace(/Ö/g, 'o')
+    .replace(/Ç/g, 'c');
+  
+  // Clean up remaining special characters and normalize spaces
   return normalizedCountry.replace(/[^a-z\s]/g, '').replace(/\s+/g, ' ').trim();
 }
 

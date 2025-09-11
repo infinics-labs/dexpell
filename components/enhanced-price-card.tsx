@@ -133,16 +133,28 @@ export function EnhancedPriceCard({
   return (
     <div className="space-y-6">
       {/* Header with destination and summary */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-3">
         <div className="flex items-center justify-center gap-2 text-lg font-semibold">
           <Globe className="w-5 h-5 text-blue-600" />
           <span>Shipping to {country}</span>
         </div>
-        {quantity > 1 && (
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            {quantity} packages • Total Weight: {totalWeight?.toFixed(1)}kg
-          </div>
-        )}
+        <div className="flex items-center justify-center gap-4 text-sm">
+          {quantity > 1 && (
+            <div className="flex items-center gap-1">
+              <Package className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-600 dark:text-gray-400">{quantity} packages</span>
+            </div>
+          )}
+          {(totalWeight || dimensionalAnalysis?.chargeableWeightTotal) && (
+            <div className="flex items-center gap-1">
+              <Scale className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-600 dark:text-gray-400">Total Weight:</span>
+              <span className="font-semibold text-primary">
+                {(totalWeight || dimensionalAnalysis?.chargeableWeightTotal)?.toFixed(1)}kg
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Dimensional Analysis Card */}

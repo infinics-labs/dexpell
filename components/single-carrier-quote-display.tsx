@@ -87,15 +87,24 @@ export function SingleCarrierQuoteDisplay({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-2"
+        className="text-center space-y-3"
       >
         <h3 className="text-xl font-semibold flex items-center justify-center gap-2">
           <Truck className="size-5" />
           {isDraft ? 'Draft Shipping Quote' : 'Shipping Quote'}
         </h3>
-        <p className="text-muted-foreground">
-          Destination: <span className="font-medium">{country}</span>
-        </p>
+        <div className="flex items-center justify-center gap-4 text-sm">
+          <div className="flex items-center gap-1">
+            <Globe className="size-4 text-muted-foreground" />
+            <span className="text-muted-foreground">To:</span>
+            <span className="font-medium">{country}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Scale className="size-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Total Weight:</span>
+            <span className="font-semibold text-primary">{chargeableWeight.toFixed(1)} kg</span>
+          </div>
+        </div>
       </motion.div>
 
       {/* Package Information */}
