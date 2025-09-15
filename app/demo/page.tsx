@@ -73,13 +73,6 @@ export default function DemoPage() {
         </div>
 
         {/* Single Carrier Example */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Draft Quote (Single Carrier)</h2>
-          <p className="text-muted-foreground">
-            This shows a draft quote from cargo_draft_pricing (before dimensions are provided)
-          </p>
-          <SingleCarrierQuoteDisplay {...sampleSingleCarrierData} />
-        </div>
 
         {/* API Response Preview */}
         <div className="space-y-4">

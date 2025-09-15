@@ -8,7 +8,8 @@ import {
   DollarSign, 
   Truck,
   Globe,
-  Info
+  Info,
+  Weight
 } from 'lucide-react';
 
 // Single carrier configuration with styling - matches Dexpellweb design
@@ -208,40 +209,35 @@ export function SingleCarrierQuoteDisplay({
 
         {/* Pricing */}
         <div className="space-y-3">
-          {quantity > 1 && pricePerBox && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Per box:</span>
-              <span className="font-medium">${pricePerBox.toFixed(2)}</span>
-            </div>
-          )}
-          
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign className="size-4 text-green-600 dark:text-green-400" />
-              <span className="font-medium">
-                {quantity > 1 ? 'Total:' : 'Price:'}
-              </span>
+              <span className="font-medium">Total Price:</span>
             </div>
             <span className={`text-2xl font-bold ${config.priceColor}`}>
               ${totalPrice.toFixed(2)}
             </span>
           </div>
           
-          {quantity > 1 && pricePerBox && (
-            <p className="text-xs text-muted-foreground text-right">
-              ({quantity} boxes × ${pricePerBox.toFixed(2)})
-            </p>
-          )}
-          
           <p className="text-xs text-muted-foreground text-right">USD</p>
         </div>
 
         {/* Service Info */}
-        <div className="mt-4 pt-4 border-t border-border">
+        <div className="mt-4 pt-4 border-t border-border space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Globe className="size-4" />
             <span>Express Service</span>
           </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Package className="size-4" />
+            <span>{quantity} box{quantity !== 1 ? 'es' : ''}</span>
+          </div>
+          {(actualWeight || chargeableWeight) && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Weight className="size-4" />
+              <span>{actualWeight ? (actualWeight * (quantity || 1)) : chargeableWeight} kg total</span>
+            </div>
+          )}
         </div>
       </motion.div>
 

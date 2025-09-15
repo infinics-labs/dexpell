@@ -8,7 +8,8 @@ import {
   Globe,
   Calculator,
   Info,
-  DollarSign
+  DollarSign,
+  Weight
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
@@ -94,6 +95,8 @@ interface CarrierQuote {
   available: boolean;
   region?: number;
   serviceType: string;
+  actualWeight?: number;
+  chargeableWeight?: number;
 }
 
 interface PricingFormData {
@@ -154,7 +157,9 @@ export function MultiCarrierPricing() {
           totalPrice: price,
           available: true,
           region,
-          serviceType: 'UPS Express'
+          serviceType: 'UPS Express',
+          actualWeight: formData.weight * formData.quantity,
+          chargeableWeight: totalChargeableWeight
         });
       }
     }
@@ -170,7 +175,9 @@ export function MultiCarrierPricing() {
           totalPrice: price,
           available: true,
           region,
-          serviceType: 'DHL Express'
+          serviceType: 'DHL Express',
+          actualWeight: formData.weight * formData.quantity,
+          chargeableWeight: totalChargeableWeight
         });
       }
     }
@@ -184,7 +191,9 @@ export function MultiCarrierPricing() {
         pricePerBox: formData.quantity > 1 ? price / formData.quantity : undefined,
         totalPrice: price,
         available: true,
-        serviceType: 'ARAMEX Express'
+        serviceType: 'ARAMEX Express',
+        actualWeight: formData.weight * formData.quantity,
+        chargeableWeight: totalChargeableWeight
       });
     }
 
@@ -462,40 +471,35 @@ export function MultiCarrierPricing() {
 
                   {/* Pricing */}
                   <div className="space-y-3">
-                    {formData.quantity > 1 && quote.pricePerBox && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Per box:</span>
-                        <span className="font-medium">${quote.pricePerBox.toFixed(2)}</span>
-                      </div>
-                    )}
-                    
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <DollarSign className="size-4 text-green-600 dark:text-green-400" />
-                        <span className="font-medium">
-                          {formData.quantity > 1 ? 'Total:' : 'Price:'}
-                        </span>
+                        <span className="font-medium">Total Price:</span>
                       </div>
                       <span className={`text-2xl font-bold ${config.priceColor}`}>
                         ${quote.totalPrice.toFixed(2)}
                       </span>
                     </div>
                     
-                    {formData.quantity > 1 && quote.pricePerBox && (
-                      <p className="text-xs text-muted-foreground text-right">
-                        ({formData.quantity} boxes × ${quote.pricePerBox.toFixed(2)})
-                      </p>
-                    )}
-                    
                     <p className="text-xs text-muted-foreground text-right">USD</p>
                   </div>
 
                   {/* Service Info */}
-                  <div className="mt-4 pt-4 border-t border-border">
+                  <div className="mt-4 pt-4 border-t border-border space-y-2">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Globe className="size-4" />
                       <span>Express Service</span>
                     </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Package className="size-4" />
+                      <span>{formData.quantity} box{formData.quantity !== 1 ? 'es' : ''}</span>
+                    </div>
+                    {(quote.actualWeight || quote.chargeableWeight) && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Weight className="size-4" />
+                        <span>{quote.actualWeight || quote.chargeableWeight} kg total</span>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );

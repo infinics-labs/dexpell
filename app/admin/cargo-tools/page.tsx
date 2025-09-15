@@ -41,7 +41,7 @@ export default function CargoToolsPage() {
     setPricingData(prev => ({ ...prev, [field]: value }));
   };
 
-  const calculatePricing = async (type: 'draft' | 'multi' | 'mixed') => {
+  const calculatePricing = async (type: 'multi' | 'mixed') => {
     setIsLoading(true);
     try {
       let endpoint = '';
@@ -51,14 +51,6 @@ export default function CargoToolsPage() {
       };
 
       switch (type) {
-        case 'draft':
-          endpoint = '/api/functions/cargo_draft_pricing/route';
-          payload = {
-            ...payload,
-            weight: parseFloat(pricingData.weight),
-            quantity: pricingData.quantity
-          };
-          break;
         case 'multi':
           endpoint = '/api/functions/cargo_multi_pricing/route';
           payload = {
@@ -251,13 +243,6 @@ export default function CargoToolsPage() {
                   </div>
 
                   <div className="flex space-x-2 pt-4">
-                    <Button 
-                      onClick={() => calculatePricing('draft')}
-                      disabled={isLoading || !pricingData.content || !pricingData.country || !pricingData.weight}
-                      className="flex-1"
-                    >
-                      Draft Pricing
-                    </Button>
                     <Button 
                       onClick={() => calculatePricing('multi')}
                       disabled={isLoading || !pricingData.content || !pricingData.country || !pricingData.weight || !pricingData.length}

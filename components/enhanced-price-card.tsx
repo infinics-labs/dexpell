@@ -83,6 +83,8 @@ interface CarrierQuote {
   available: boolean;
   region?: number | string;
   serviceType: string;
+  actualWeight?: number;
+  chargeableWeight?: number;
 }
 
 interface EnhancedPriceCardProps {
@@ -330,11 +332,6 @@ export function EnhancedPriceCard({
                       ${quote.totalPrice.toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-500">Total Price</div>
-                    {quote.pricePerBox && quantity > 1 && (
-                      <div className="text-xs text-gray-400 mt-1">
-                        ${quote.pricePerBox.toFixed(2)} per box
-                      </div>
-                    )}
                   </div>
 
                   {/* Service details */}
@@ -347,10 +344,14 @@ export function EnhancedPriceCard({
                       <Globe className="w-4 h-4" />
                       <span>To {country}</span>
                     </div>
-                    {quantity > 1 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Package className="w-4 h-4" />
+                      <span>{quantity} box{quantity !== 1 ? 'es' : ''}</span>
+                    </div>
+                    {(quote.actualWeight || totalWeight || dimensionalAnalysis?.chargeableWeightTotal) && (
                       <div className="flex items-center gap-2 text-sm">
-                        <Package className="w-4 h-4" />
-                        <span>{quantity} packages</span>
+                        <Weight className="w-4 h-4" />
+                        <span>{quote.actualWeight || totalWeight || dimensionalAnalysis?.chargeableWeightTotal} kg total</span>
                       </div>
                     )}
                   </div>
