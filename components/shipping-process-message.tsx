@@ -37,7 +37,7 @@ export function ShippingProcessMessage({ language = 'en' }: ShippingProcessMessa
       shippingProcess4: language === 'tr' ? 'Onay ve Ödeme: Ücreti onaylamanızın ardından ödeme faturanız hazırlanır.' : 'Approval and Payment: After you approve the fee, your payment invoice is prepared.',
       shippingProcess5: language === 'tr' ? 'Takip ve Çıkış: Ödeme sonrasında takip kodunuz ve gerekli evraklar paylaşılır, gönderiniz çıkışa hazırlanır.' : 'Tracking and Departure: After payment, your tracking code and necessary documents are shared, your shipment is prepared for departure.',
       pickupService: language === 'tr' ? 'İstanbul veya Adana\'daysanız, kargonuzu kapınızdan ücretsiz olarak kendi kuryelerimizle alabiliriz.' : 'If you are in Istanbul or Adana, we can pick up your cargo from your door free of charge with our own couriers.',
-      hipexInfo: language === 'tr' ? 'Dexpell Cargo olarak, her gün dünyanın dört bir yanına hava kargo ve karayolu ile kargo gönderimi yapıyoruz!' : 'As Dexpell Cargo, we make cargo shipments by air cargo and road to all over the world every day!',
+      hipexInfo: language === 'tr' ? 'Hipex Cargo olarak, her gün dünyanın dört bir yanına hava kargo ve karayolu ile kargo gönderimi yapıyoruz!' : 'As Hipex Cargo, we make cargo shipments by air cargo and road to all over the world every day!',
       proceedWith: language === 'tr' ? 'Gönderinizi ilerletmek için lütfen şunları kullanın:' : 'To proceed with your shipment, please use:',
       shipmentForm: language === 'tr' ? 'Gönderi Talep Formu' : 'Shipment Request Form',
       mngCode: language === 'tr' ? 'MNG Anlaşma Kodu: 157381919' : 'MNG Agreement Code: 157381919',

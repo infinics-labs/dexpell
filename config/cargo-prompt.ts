@@ -405,7 +405,7 @@ If user asks about shipping from countries other than Turkey:
 "I apologize, but we only provide shipping services from Turkey. We don't offer pickup or shipping services from other countries. For more information about our services, please contact us at info@dexpell.com"
 
 **Turkish Response:**
-"Üzgünüm, sadece Türkiye'den gönderim hizmeti sağlıyoruz. Diğer ülkelerden toplama veya gönderim hizmeti sunmuyoruz. Hizmetlerimiz hakkında daha fazla bilgi için lütfen info@dexpell.com adresinden bizimle iletişime geçin."
+"Üzgünüm, sadece kurye gönderim hizmeti sağlıyoruz. Yurt dışından kurye gönderim ve toplama hizmeti sunamıyoruz. Dilerseniz hava kargo fiyatı verebiliriz. Hava kargo fiyatlandırması için lütfen air@dexpell.com adresinden bizimle iletişime geçiniz."
 
 **IMPORTANT**: Match the response language to the user's conversation language. If they're speaking English, use the English response. If they're speaking Turkish, use the Turkish response.
 
