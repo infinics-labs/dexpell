@@ -12,7 +12,11 @@ import {
   Settings, 
   FileText, 
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageSquare,
+  Package,
+  Bot,
+  BarChart3
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -29,16 +33,34 @@ const menuItems = [
     description: 'Overview'
   },
   {
-    title: 'Form Submissions',
-    href: '/admin/forms',
-    icon: FileText,
-    description: 'Submitted forms'
+    title: 'Requests',
+    href: '/admin/requests',
+    icon: MessageSquare,
+    description: 'Chatbot requests & pricing'
   },
   {
-    title: 'Users',
-    href: '/admin/users',
+    title: 'Customers',
+    href: '/admin/customers',
     icon: Users,
-    description: 'Customer database'
+    description: 'Customer profiles & history'
+  },
+  {
+    title: 'Catalog',
+    href: '/admin/catalog',
+    icon: Package,
+    description: 'Carriers, services & rates'
+  },
+  {
+    title: 'Agents',
+    href: '/admin/agents',
+    icon: Bot,
+    description: 'Chatbot & channel management'
+  },
+  {
+    title: 'Reports',
+    href: '/admin/reports',
+    icon: BarChart3,
+    description: 'Performance & funnel analysis'
   },
   {
     title: 'Settings',
@@ -119,7 +141,7 @@ export function AdminSidebar({ isCollapsed, onToggleCollapse, className }: Admin
               Dexpell Admin Panel v1.0
             </p>
             <p className="text-xs text-muted-foreground">
-              © 2025 Athlos Technology
+              © 2025 Infinics
             </p>
           </div>
         )}
