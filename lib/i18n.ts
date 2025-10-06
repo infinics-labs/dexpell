@@ -142,7 +142,7 @@ export const messages: Record<SupportedLanguage, Messages> = {
       agents: {
         nova: {
           name: 'Nova',
-          title: 'Last Mile Solutions Manager',
+          title: 'Cargo Pricing Executive',
           description: 'Agile, precise, and street-smart. Nova handles e-commerce and courier delivery planning like no human ever could.',
           features: [
             'Last-mile cost optimization',
@@ -349,7 +349,7 @@ export const messages: Record<SupportedLanguage, Messages> = {
       agents: {
         nova: {
           name: 'Nova',
-          title: 'Kurye Taşımacılığı Çözümleri Müdürü',
+          title: 'Kargo Fiyatlandırma Uzmanı',
           description: 'Çevik, hassas ve sokak zekası olan. Nova, e-ticaret ve kurye teslimat planlamasını hiçbir insanın yapamayacağı şekilde yönetiyor.',
           features: [
             'Son kilometre maliyet optimizasyonu',

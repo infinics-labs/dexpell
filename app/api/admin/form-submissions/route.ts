@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     const requiredFields = [
       'sender_name', 'sender_tc', 'sender_address', 'sender_contact',
       'receiver_name', 'receiver_address', 'city_postal', 'destination',
-      'receiver_contact', 'receiver_email', 'content_description', 'content_value'
+      'receiver_contact', 'receiver_email', 'content_description'
     ];
 
     for (const field of requiredFields) {
@@ -105,14 +105,16 @@ export async function POST(request: NextRequest) {
         sender_tc: body.sender_tc,
         sender_address: body.sender_address,
         sender_contact: body.sender_contact,
+        sender_phone_code: body.sender_phone_code || null,
         receiver_name: body.receiver_name,
         receiver_address: body.receiver_address,
         city_postal: body.city_postal,
         destination: body.destination,
         receiver_contact: body.receiver_contact,
+        receiver_phone_code: body.receiver_phone_code || null,
         receiver_email: body.receiver_email,
         content_description: body.content_description,
-        content_value: body.content_value,
+        content_value: body.content_value || null,
         user_type: body.user_type || 'guest',
         user_email: body.user_email || null,
         user_id: body.user_id || null,

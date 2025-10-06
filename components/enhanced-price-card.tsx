@@ -13,7 +13,6 @@ import {
   Calculator,
   TrendingUp,
   TrendingDown,
-  AlertTriangle,
   Box,
   Weight
 } from 'lucide-react';
@@ -34,12 +33,12 @@ const CARRIER_CONFIG = {
   },
   DHL: {
     name: 'DHL Express',
-    gradientFrom: 'from-yellow-500',
-    gradientTo: 'to-red-500',
-    borderColor: 'border-yellow-200 dark:border-yellow-800',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-950',
-    textColor: 'text-yellow-700 dark:text-yellow-300',
-    priceColor: 'text-yellow-600 dark:text-yellow-400',
+    gradientFrom: 'from-orange-400',
+    gradientTo: 'to-yellow-500',
+    borderColor: 'border-orange-200 dark:border-orange-700',
+    bgColor: 'bg-orange-50 dark:bg-orange-900',
+    textColor: 'text-orange-700 dark:text-orange-300',
+    priceColor: 'text-orange-600 dark:text-orange-400',
     avatar: 'DHL',
     logoPath: '/logos/dhl-logo.png'
   },
@@ -116,7 +115,6 @@ export function EnhancedPriceCard({
   const finalQuantity = quantity ?? dimensionalAnalysis?.totalBoxes ?? 1;
   
   const availableQuotes = quotes.filter(q => q.available);
-  const unavailableQuotes = quotes.filter(q => !q.available);
 
   // Sort quotes by price (lowest first)
   const sortedQuotes = [...availableQuotes].sort((a, b) => a.totalPrice - b.totalPrice);
@@ -160,8 +158,6 @@ export function EnhancedPriceCard({
       to: language === 'tr' ? `${country}'ya` : `To ${country}`,
       deliveryTime: language === 'tr' ? 'Teslimat süresi:' : 'Delivery time:',
       days: language === 'tr' ? 'gün' : 'days',
-      notAvailable: language === 'tr' ? 'Mevcut Değil' : 'Not Available',
-      notAvailableFor: language === 'tr' ? `${country} için mevcut değil` : `Not available for ${country}`,
       finalPricing: language === 'tr' ? 'Fiyatlar tüm geçerli ücretleri içerir. Nihai fiyatlandırma depoda ölçüm sonrası teyit edilir.' : 'Prices include all applicable charges. Final pricing confirmed after measurement at warehouse.'
     };
     return texts[key as keyof typeof texts] || key;
@@ -417,50 +413,6 @@ export function EnhancedPriceCard({
           );
         })}
 
-        {/* Unavailable carriers */}
-        {unavailableQuotes.map((quote, index) => {
-          const config = CARRIER_CONFIG[quote.carrier];
-
-          return (
-            <motion.div
-              key={`unavailable-${quote.carrier}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: (sortedQuotes.length + index) * 0.1 }}
-            >
-              <Card className="border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-200 border flex items-center justify-center p-1">
-                        <Image
-                          src={config.logoPath}
-                          alt={`${quote.carrier} logo`}
-                          width={quote.carrier === 'UPS' ? 36 : 32}
-                          height={quote.carrier === 'UPS' ? 36 : 32}
-                          className="object-contain opacity-50"
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg text-gray-500">
-                          {config.name}
-                        </CardTitle>
-                        <div className="text-xs text-gray-400">{getText('notAvailable')}</div>
-                      </div>
-                    </div>
-                    <AlertTriangle className="w-5 h-5 text-gray-400" />
-                  </div>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="text-center text-gray-500">
-                    <div className="text-sm">{getText('notAvailableFor')}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
       </div>
 
       {/* Summary note */}

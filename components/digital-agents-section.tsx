@@ -44,38 +44,6 @@ const agents: Agent[] = [
     bgGradient: 'from-orange-500/10 to-amber-500/10',
     available: true,
     videoUrl: '/videos/nova-cargo.mp4'
-  },
-  {
-    key: 'arwen',
-    icon: Anchor,
-    iconColor: 'text-blue-600 dark:text-blue-400',
-    bgGradient: 'from-blue-500/10 to-cyan-500/10',
-    available: true,
-    videoUrl: '/videos/arwen-intro.mp4' // Placeholder for future video
-  },
-  {
-    key: 'elif',
-    icon: Plane,
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    bgGradient: 'from-purple-500/10 to-pink-500/10',
-    available: true,
-    videoUrl: '/videos/elif-intro.mp4' // Placeholder for future video
-  },
-  {
-    key: 'lucas',
-    icon: Truck,
-    iconColor: 'text-green-600 dark:text-green-400',
-    bgGradient: 'from-green-500/10 to-emerald-500/10',
-    available: true,
-    videoUrl: '/videos/lucas-intro.mp4' // Placeholder for future video
-  },
-  {
-    key: 'sofia',
-    icon: Globe,
-    iconColor: 'text-red-600 dark:text-red-400',
-    bgGradient: 'from-red-500/10 to-rose-500/10',
-    available: true,
-    videoUrl: '/videos/sofia-intro.mp4' // Placeholder for future video
   }
 ];
 
@@ -85,10 +53,8 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
 
-  // Layout: Nova on top (first agent), then 3 agents in middle row, then 1 agent in bottom row
-  const topAgent = agents[0]; // Nova
-  const middleRowAgents = agents.slice(1, 4); // Next 3 agents
-  const bottomRowAgents = agents.slice(4, 5); // Last agent
+  // Layout: Only Nova agent
+  const novaAgent = agents[0]; // Nova
 
   const handleAgentClick = (agent: Agent) => {
     if (agent.available) {
@@ -223,19 +189,9 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
           </p>
         </motion.div>
 
-        {/* Top row - Nova (centered) */}
-        <div className="mb-8 flex justify-center">
-          {renderAgentCard(topAgent, 0)}
-        </div>
-
-        {/* Middle row - 3 agents */}
-        <div className="mb-8 grid gap-6 md:grid-cols-3">
-          {middleRowAgents.map((agent, index) => renderAgentCard(agent, index + 1))}
-        </div>
-
-        {/* Bottom row - 1 agent (centered) */}
+        {/* Nova Agent (centered) */}
         <div className="flex justify-center">
-          {renderAgentCard(bottomRowAgents[0], 4)}
+          {renderAgentCard(novaAgent, 0)}
         </div>
       </div>
 

@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { User, MapPin, Package, Phone, Mail, Globe } from 'lucide-react';
 import { translate, type SupportedLanguage } from '@/lib/i18n';
-import { LanguageSwitcher } from '@/components/language-switcher';
 import { SelectablePriceCard } from '@/components/selectable-price-card';
+import PhoneCodeSelector from '@/components/phone-code-selector';
+import DestinationCountrySelector from '@/components/destination-country-selector';
 import usePriceCardStore from '@/stores/usePriceCardStore';
 
 interface FormData {
@@ -18,6 +20,7 @@ interface FormData {
   sender_tc: string;
   sender_address: string;
   sender_contact: string;
+  sender_phone_code: string;
   
   // Receiver Information
   receiver_name: string;
@@ -25,6 +28,7 @@ interface FormData {
   receiver_address: string;
   destination: string;
   receiver_contact: string;
+  receiver_phone_code: string;
   receiver_email: string;
   
   // Shipment Information
@@ -40,6 +44,9 @@ export default function ShipmentRequestForm() {
   const [language, setLanguage] = useState<SupportedLanguage>('en');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showOnlyPriceSelection, setShowOnlyPriceSelection] = useState(false);
   
   // Use price card store
   const { 
@@ -64,11 +71,13 @@ export default function ShipmentRequestForm() {
     sender_tc: '',
     sender_address: '',
     sender_contact: '',
+    sender_phone_code: '+90',
     receiver_name: '',
     city_postal: '',
     receiver_address: '',
     destination: '',
     receiver_contact: '',
+    receiver_phone_code: '+90',
     receiver_email: '',
     content_description: '',
     content_value: ''
@@ -84,15 +93,138 @@ export default function ShipmentRequestForm() {
     }
   }, []);
 
+  const handleLanguageChange = (newLanguage: SupportedLanguage) => {
+    setLanguage(newLanguage);
+    const expires = new Date(Date.now() + 365 * 24 * 3600 * 1000).toUTCString();
+    document.cookie = `lang=${newLanguage}; path=/; expires=${expires}`;
+    // Don't reload the page - just update the state
+  };
+
   const handleInputChange = (field: keyof FormData, value: string) => {
+    // Handle phone number formatting and restriction
+    if (field === 'sender_contact' || field === 'receiver_contact') {
+      // Remove all non-digits
+      const digitsOnly = value.replace(/\D/g, '');
+      // Limit to 10 digits
+      const limitedDigits = digitsOnly.slice(0, 10);
+      value = limitedDigits;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+    
+    // Clear field error when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    
+    // Required fields validation
+    const requiredFields = {
+      sender_name: getText('senderName'),
+      sender_tc: getText('senderTC'),
+      sender_address: getText('address'),
+      sender_contact: getText('contactNo'),
+      receiver_name: getText('receiverName'),
+      city_postal: getText('cityPostal'),
+      receiver_address: getText('address'),
+      destination: getText('destination'),
+      receiver_contact: getText('contactNo'),
+      receiver_email: getText('contactEmail'),
+      content_description: getText('contentDescription')
+    };
+
+    Object.entries(requiredFields).forEach(([field, label]) => {
+      if (!formData[field as keyof FormData]?.trim()) {
+        errors[field] = language === 'tr' 
+          ? `${label} alanı zorunludur` 
+          : `${label} field is required`;
+      }
+    });
+
+    // Email validation
+    if (formData.receiver_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.receiver_email)) {
+      errors.receiver_email = language === 'tr' 
+        ? 'Geçerli bir email adresi giriniz' 
+        : 'Please enter a valid email address';
+    }
+
+    // Phone number validation (must be exactly 10 digits)
+    if (formData.sender_contact && formData.sender_contact.length !== 10) {
+      errors.sender_contact = language === 'tr' 
+        ? 'Telefon numarası 10 haneli olmalıdır' 
+        : 'Phone number must be 10 digits';
+    }
+    
+    if (formData.receiver_contact && formData.receiver_contact.length !== 10) {
+      errors.receiver_contact = language === 'tr' 
+        ? 'Telefon numarası 10 haneli olmalıdır' 
+        : 'Phone number must be 10 digits';
+    }
+
+    // Carrier selection validation
+    if (!selectedCarrier || !selectedQuote) {
+      errors.selected_carrier = language === 'tr' 
+        ? 'Lütfen bir kargo firması seçin' 
+        : 'Please select a shipping carrier';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSuccessPopupClose = () => {
+    setShowSuccessPopup(false);
+    setSubmitStatus('idle');
+    setShowOnlyPriceSelection(true);
+    
+    // Reset form
+    setFormData({
+      sender_name: '',
+      sender_tc: '',
+      sender_address: '',
+      sender_contact: '',
+      sender_phone_code: '+90',
+      receiver_name: '',
+      city_postal: '',
+      receiver_address: '',
+      destination: '',
+      receiver_contact: '',
+      receiver_phone_code: '+90',
+      receiver_email: '',
+      content_description: '',
+      content_value: ''
+    });
+    
+    // Clear field errors
+    setFieldErrors({});
+    
+    // Clear selected carrier and price card
+    clearSelectedCarrier();
+  };
+
+  const handleNewSubmission = () => {
+    setShowOnlyPriceSelection(false);
+    setSubmitStatus('idle');
+    setFieldErrors({});
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
@@ -122,22 +254,7 @@ export default function ShipmentRequestForm() {
 
       if (response.ok) {
         setSubmitStatus('success');
-        // Reset form
-        setFormData({
-          sender_name: '',
-          sender_tc: '',
-          sender_address: '',
-          sender_contact: '',
-          receiver_name: '',
-          city_postal: '',
-          receiver_address: '',
-          destination: '',
-          receiver_contact: '',
-          receiver_email: '',
-          content_description: '',
-          content_value: ''
-        });
-        clearSelectedCarrier();
+        setShowSuccessPopup(true);
       } else {
         setSubmitStatus('error');
       }
@@ -162,7 +279,7 @@ export default function ShipmentRequestForm() {
       address: language === 'tr' ? 'Adres' : 'Address',
       addressPlaceholder: language === 'tr' ? 'Detaylı adres bilgisi' : 'Detailed address information',
       contactNo: language === 'tr' ? 'İletişim No' : 'Contact No',
-      contactPlaceholder: language === 'tr' ? 'Telefon numarası' : 'Phone number',
+      contactPlaceholder: language === 'tr' ? '(___) (___) (__) (__)' : '(___) (___) (__) (__)',
       receiverName: language === 'tr' ? 'Alıcı Ad Soyad' : 'Receiver Name Surname',
       receiverNamePlaceholder: language === 'tr' ? 'Ad soyad' : 'Full name',
       cityPostal: language === 'tr' ? 'Şehir Posta Kodu' : 'City Postal Code',
@@ -173,7 +290,7 @@ export default function ShipmentRequestForm() {
       emailPlaceholder: language === 'tr' ? 'Email adresi' : 'Email address',
       contentDescription: language === 'tr' ? 'İçerik Açıklaması' : 'Content Description',
       contentPlaceholder: language === 'tr' ? 'Paket içeriği' : 'Package contents',
-      contentValue: language === 'tr' ? 'İçerik Değeri' : 'Content Value',
+      contentValue: language === 'tr' ? 'İçerik Değeri $' : 'Content Value $',
       valuePlaceholder: language === 'tr' ? 'Değer (USD)' : 'Value (USD)',
       submitForm: language === 'tr' ? 'Formu Gönder' : 'Submit Form',
       submitting: language === 'tr' ? 'Gönderiliyor...' : 'Submitting...',
@@ -200,68 +317,247 @@ export default function ShipmentRequestForm() {
             <h1 className="text-4xl font-bold text-white">
               {getText('title')}
             </h1>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-2">
+              <Button
+                variant={language === 'en' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleLanguageChange('en')}
+              >
+                EN
+              </Button>
+              <Button
+                variant={language === 'tr' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleLanguageChange('tr')}
+              >
+                TR
+              </Button>
+            </div>
           </div>
-          <p className="text-lg text-gray-300">
-            {language === 'tr' ? 'Shipment Request Form' : 'Gönderi Talep Formu'}
-          </p>
         </div>
 
-        {/* Main Content - Two Column Layout */}
+        {/* Main Content - Dynamic Layout */}
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className={showOnlyPriceSelection ? "flex justify-center" : "grid grid-cols-1 lg:grid-cols-3 gap-8"}>
             
-            {/* Left Column - Price Cards */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-8">
-                <Card className="border-0 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm shadow-2xl">
-                  <CardHeader className="bg-gradient-to-r from-indigo-600/20 to-purple-700/20 border-b border-indigo-500/30">
-                    <CardTitle className="flex items-center gap-4">
-                      <div className="p-3 bg-indigo-600 rounded-xl shadow-lg">
-                        <Package className="h-7 w-7 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-white">
-                          {language === 'tr' ? 'Kargo Seçenekleri' : 'Shipping Options'}
-                        </h2>
-                        <p className="text-sm text-gray-300 mt-1">
-                          {language === 'tr' ? 'Bir kargo firması seçin' : 'Select a shipping carrier'}
-                        </p>
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    {currentPriceCardData ? (
-                      <SelectablePriceCard
-                        country={currentPriceCardData.country}
-                        quotes={currentPriceCardData.quotes}
-                        quantity={currentPriceCardData.quantity}
-                        totalWeight={currentPriceCardData.totalWeight}
-                        language={language}
-                        selectedCarrier={selectedCarrier || ''}
-                        onCarrierSelect={handleCarrierSelect}
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                        <div className="p-3 bg-gray-600/20 rounded-lg">
-                          <Package className="h-6 w-6 text-gray-400" />
+            {/* Left Column - Price Cards (hidden when showing success view) */}
+            {!showOnlyPriceSelection && (
+              <div className="lg:col-span-1">
+                <div className="sticky top-8">
+                  <Card className="border-0 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm shadow-2xl">
+                    <CardHeader className="bg-gradient-to-r from-indigo-600/20 to-purple-700/20 border-b border-indigo-500/30">
+                      <CardTitle className="flex items-center gap-4">
+                        <div className="p-3 bg-indigo-600 rounded-xl shadow-lg">
+                          <Package className="h-7 w-7 text-white" />
                         </div>
-                        <p className="text-gray-400 text-sm text-center">
+                        <div>
+                          <h2 className="text-2xl font-bold text-white">
+                            {language === 'tr' ? 'Kargo Seçenekleri' : 'Shipping Options'}
+                          </h2>
+                          <p className="text-sm text-gray-300 mt-1">
+                            {language === 'tr' ? 'Bir kargo firması seçin' : 'Select a shipping carrier'}
+                          </p>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      {currentPriceCardData ? (
+                        <SelectablePriceCard
+                          country={currentPriceCardData.country}
+                          quotes={currentPriceCardData.quotes}
+                          quantity={currentPriceCardData.quantity}
+                          totalWeight={currentPriceCardData.totalWeight}
+                          language={language}
+                          selectedCarrier={selectedCarrier || ''}
+                          onCarrierSelect={handleCarrierSelect}
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                          <div className="p-3 bg-gray-600/20 rounded-lg">
+                            <Package className="h-6 w-6 text-gray-400" />
+                          </div>
+                          <p className="text-gray-400 text-sm text-center">
+                            {language === 'tr' 
+                              ? 'Önce chat\'te kargo fiyatı hesaplayın, sonra buradan seçim yapabilirsiniz' 
+                              : 'Calculate shipping prices in chat first, then you can select here'
+                            }
+                          </p>
+                        </div>
+                      )}
+                      {fieldErrors.selected_carrier && (
+                        <div className="mt-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                          <p className="text-red-400 text-sm text-center">{fieldErrors.selected_carrier}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Support Information Card */}
+                  <Card className="border-0 bg-slate-800/50 backdrop-blur-sm mt-6">
+                    <CardContent className="p-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-center gap-3 text-gray-300">
+                          <Mail className="h-5 w-5 text-blue-400" />
+                          <span className="text-sm font-medium">SUPPORT: info@dexpell.com</span>
+                        </div>
+                        <div className="flex items-center justify-center gap-3 text-gray-300">
+                          <Phone className="h-5 w-5 text-green-400" />
+                          <span className="text-sm font-medium">PHONE: +90 212 852 55 00</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Right Column - Form */}
+            <div className={showOnlyPriceSelection ? "w-full max-w-4xl" : "lg:col-span-2"}>
+              {showOnlyPriceSelection ? (
+                /* Shipping Process and Support Only View */
+                <div className="space-y-8">
+                  {/* Shipping Process Card */}
+                  <Card className="border-0 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm shadow-2xl">
+                    <CardHeader className="bg-gradient-to-r from-green-600/20 to-green-700/20 border-b border-green-500/30">
+                      <CardTitle className="flex items-center gap-4">
+                        <div className="p-3 bg-green-600 rounded-xl shadow-lg">
+                          <Package className="h-7 w-7 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold text-white">
+                            {language === 'tr' ? 'Gönderim Süreci' : 'Shipping Process'}
+                          </h2>
+                          <p className="text-sm text-green-300 mt-1">
+                            {language === 'tr' ? 'Formunuz başarıyla gönderildi!' : 'Your form has been submitted successfully!'}
+                          </p>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4 p-4 bg-blue-600/10 rounded-lg border border-blue-500/20">
+                          <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                          <div>
+                            <h4 className="font-semibold text-white mb-2">
+                              {language === 'tr' ? 'Kargo Gönderimi' : 'Cargo Shipment'}
+                            </h4>
+                            <p className="text-gray-300 text-sm">
+                              {language === 'tr' 
+                                ? 'Gönderinizi, 157381919 MNG Anlaşma Kodu ile ücretsiz olarak tarafımıza gönderebilirsiniz.' 
+                                : 'You can send your shipment to us free of charge with the 157381919 MNG Agreement Code.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 p-4 bg-purple-600/10 rounded-lg border border-purple-500/20">
+                          <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                          <div>
+                            <h4 className="font-semibold text-white mb-2">
+                              {language === 'tr' ? 'Ölçüm ve Fiyatlandırma' : 'Measurement and Pricing'}
+                            </h4>
+                            <p className="text-gray-300 text-sm">
+                              {language === 'tr' 
+                                ? 'Depomuza ulaşan kargonuzun ağırlık ve ölçümleri yapılarak ücretlendirme tarafınıza bildirilir.' 
+                                : 'Weight and measurements of your cargo reaching our warehouse will be made and pricing will be notified to you.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 p-4 bg-orange-600/10 rounded-lg border border-orange-500/20">
+                          <div className="flex-shrink-0 w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                          <div>
+                            <h4 className="font-semibold text-white mb-2">
+                              {language === 'tr' ? 'Erken Takip Kodu' : 'Early Tracking Code'}
+                            </h4>
+                            <p className="text-gray-300 text-sm">
+                              {language === 'tr' 
+                                ? 'Dilerseniz, gönderiniz henüz depomuza ulaşmadan erken takip kodu alabilirsiniz.' 
+                                : 'If you wish, you can get an early tracking code before your shipment reaches our warehouse.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 p-4 bg-green-600/10 rounded-lg border border-green-500/20">
+                          <div className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
+                          <div>
+                            <h4 className="font-semibold text-white mb-2">
+                              {language === 'tr' ? 'Onay ve Ödeme' : 'Approval and Payment'}
+                            </h4>
+                            <p className="text-gray-300 text-sm">
+                              {language === 'tr' 
+                                ? 'Ücreti onaylamanızın ardından ödeme faturanız hazırlanır.' 
+                                : 'After you approve the fee, your payment invoice is prepared.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4 p-4 bg-indigo-600/10 rounded-lg border border-indigo-500/20">
+                          <div className="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">5</div>
+                          <div>
+                            <h4 className="font-semibold text-white mb-2">
+                              {language === 'tr' ? 'Takip ve Çıkış' : 'Tracking and Departure'}
+                            </h4>
+                            <p className="text-gray-300 text-sm">
+                              {language === 'tr' 
+                                ? 'Ödeme sonrasında takip kodunuz ve gerekli evraklar paylaşılır, gönderiniz çıkışa hazırlanır.' 
+                                : 'After payment, your tracking code and necessary documents are shared, your shipment is prepared for departure.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-8 p-4 bg-blue-600/10 rounded-lg border border-blue-500/20">
+                        <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
+                          <Globe className="w-5 h-5 text-blue-400" />
+                          {language === 'tr' ? 'Özel Hizmet' : 'Special Service'}
+                        </h4>
+                        <p className="text-gray-300 text-sm">
                           {language === 'tr' 
-                            ? 'Önce chat\'te kargo fiyatı hesaplayın, sonra buradan seçim yapabilirsiniz' 
-                            : 'Calculate shipping prices in chat first, then you can select here'
+                            ? 'İstanbul veya Adana\'daysanız, kargonuzu kapınızdan ücretsiz olarak kendi kuryelerimizle alabiliriz.' 
+                            : 'If you are in Istanbul or Adana, we can pick up your cargo from your door free of charge with our own couriers.'
                           }
                         </p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
 
-            {/* Right Column - Form */}
-            <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-8">
+                      <div className="text-center mt-8">
+                        <Button
+                          onClick={handleNewSubmission}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+                        >
+                          {language === 'tr' ? 'Yeni Gönderi Formu' : 'New Shipment Form'}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Contact Support Card */}
+                  <Card className="border-0 bg-slate-800/50 backdrop-blur-sm">
+                    <CardContent className="p-6">
+                      <div className="text-center space-y-4">
+                        <h3 className="text-lg font-semibold text-white">
+                          {language === 'tr' ? 'Destek İletişim' : 'Support Contact'}
+                        </h3>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-center gap-3 text-gray-300">
+                            <Mail className="h-5 w-5 text-blue-400" />
+                            <span className="text-sm font-medium">SUPPORT: info@dexpell.com</span>
+                          </div>
+                          <div className="flex items-center justify-center gap-3 text-gray-300">
+                            <Phone className="h-5 w-5 text-green-400" />
+                            <span className="text-sm font-medium">PHONE: +90 212 852 55 00</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-8">
             
             {/* Sender Information Block */}
             <Card className="border-0 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm shadow-2xl">
@@ -290,8 +586,11 @@ export default function ShipmentRequestForm() {
                       value={formData.sender_name}
                       onChange={(e) => handleInputChange('sender_name', e.target.value)}
                       required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className={`h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 ${fieldErrors.sender_name ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.sender_name && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.sender_name}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
@@ -305,8 +604,11 @@ export default function ShipmentRequestForm() {
                       value={formData.sender_tc}
                       onChange={(e) => handleInputChange('sender_tc', e.target.value)}
                       required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className={`h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 ${fieldErrors.sender_tc ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.sender_tc && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.sender_tc}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
@@ -319,23 +621,36 @@ export default function ShipmentRequestForm() {
                       value={formData.sender_address}
                       onChange={(e) => handleInputChange('sender_address', e.target.value)}
                       required
-                      className="min-h-[100px] bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                      className={`min-h-[100px] bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 ${fieldErrors.sender_address ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.sender_address && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.sender_address}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
                     <Label htmlFor="sender_contact" className="text-sm font-semibold text-gray-200">
                       {getText('contactNo')} <span className="text-red-400">*</span>
                     </Label>
-                    <Input
-                      id="sender_contact"
-                      type="tel"
-                      placeholder={getText('contactPlaceholder')}
-                      value={formData.sender_contact}
-                      onChange={(e) => handleInputChange('sender_contact', e.target.value)}
-                      required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                    />
+                    <div className="flex gap-2">
+                      <PhoneCodeSelector
+                        value={formData.sender_phone_code}
+                        onChange={(value) => handleInputChange('sender_phone_code', value)}
+                      />
+                      <Input
+                        id="sender_contact"
+                        type="tel"
+                        placeholder={formData.sender_contact ? '' : getText('contactPlaceholder')}
+                        value={formData.sender_contact}
+                        onChange={(e) => handleInputChange('sender_contact', e.target.value)}
+                        maxLength={10}
+                        required
+                        className={`h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 flex-1 ${fieldErrors.sender_contact ? 'border-red-500' : ''}`}
+                      />
+                    </div>
+                    {fieldErrors.sender_contact && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.sender_contact}</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -368,8 +683,11 @@ export default function ShipmentRequestForm() {
                       value={formData.receiver_name}
                       onChange={(e) => handleInputChange('receiver_name', e.target.value)}
                       required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500"
+                      className={`h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500 ${fieldErrors.receiver_name ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.receiver_name && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.receiver_name}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
@@ -383,8 +701,11 @@ export default function ShipmentRequestForm() {
                       value={formData.city_postal}
                       onChange={(e) => handleInputChange('city_postal', e.target.value)}
                       required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500"
+                      className={`h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500 ${fieldErrors.city_postal ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.city_postal && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.city_postal}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
@@ -397,38 +718,50 @@ export default function ShipmentRequestForm() {
                       value={formData.receiver_address}
                       onChange={(e) => handleInputChange('receiver_address', e.target.value)}
                       required
-                      className="min-h-[100px] bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500"
+                      className={`min-h-[100px] bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500 ${fieldErrors.receiver_address ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.receiver_address && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.receiver_address}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
                     <Label htmlFor="destination" className="text-sm font-semibold text-gray-200">
                       {getText('destination')} <span className="text-red-400">*</span>
                     </Label>
-                    <Input
-                      id="destination"
-                      type="text"
-                      placeholder={getText('destinationPlaceholder')}
+                    <DestinationCountrySelector
                       value={formData.destination}
-                      onChange={(e) => handleInputChange('destination', e.target.value)}
-                      required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500"
+                      onChange={(value) => handleInputChange('destination', value)}
+                      placeholder={getText('destinationPlaceholder')}
                     />
+                    {fieldErrors.destination && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.destination}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
                     <Label htmlFor="receiver_contact" className="text-sm font-semibold text-gray-200">
                       {getText('contactNo')} <span className="text-red-400">*</span>
                     </Label>
-                    <Input
-                      id="receiver_contact"
-                      type="tel"
-                      placeholder={getText('contactPlaceholder')}
-                      value={formData.receiver_contact}
-                      onChange={(e) => handleInputChange('receiver_contact', e.target.value)}
-                      required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500"
-                    />
+                    <div className="flex gap-2">
+                      <PhoneCodeSelector
+                        value={formData.receiver_phone_code}
+                        onChange={(value) => handleInputChange('receiver_phone_code', value)}
+                      />
+                      <Input
+                        id="receiver_contact"
+                        type="tel"
+                        placeholder={formData.receiver_contact ? '' : getText('contactPlaceholder')}
+                        value={formData.receiver_contact}
+                        onChange={(e) => handleInputChange('receiver_contact', e.target.value)}
+                        maxLength={10}
+                        required
+                        className={`h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500 flex-1 ${fieldErrors.receiver_contact ? 'border-red-500' : ''}`}
+                      />
+                    </div>
+                    {fieldErrors.receiver_contact && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.receiver_contact}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
@@ -442,8 +775,11 @@ export default function ShipmentRequestForm() {
                       value={formData.receiver_email}
                       onChange={(e) => handleInputChange('receiver_email', e.target.value)}
                       required
-                      className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500"
+                      className={`h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500 focus:ring-green-500 ${fieldErrors.receiver_email ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.receiver_email && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.receiver_email}</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -516,13 +852,16 @@ export default function ShipmentRequestForm() {
                       value={formData.content_description}
                       onChange={(e) => handleInputChange('content_description', e.target.value)}
                       required
-                      className="min-h-[100px] bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
+                      className={`min-h-[100px] bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 ${fieldErrors.content_description ? 'border-red-500' : ''}`}
                     />
+                    {fieldErrors.content_description && (
+                      <p className="text-red-400 text-sm mt-1">{fieldErrors.content_description}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
                     <Label htmlFor="content_value" className="text-sm font-semibold text-gray-200">
-                      {getText('contentValue')} <span className="text-red-400">*</span>
+                      {getText('contentValue')}
                     </Label>
                     <Input
                       id="content_value"
@@ -532,7 +871,6 @@ export default function ShipmentRequestForm() {
                       placeholder={getText('valuePlaceholder')}
                       value={formData.content_value}
                       onChange={(e) => handleInputChange('content_value', e.target.value)}
-                      required
                       className="h-12 bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500"
                     />
                   </div>
@@ -541,103 +879,6 @@ export default function ShipmentRequestForm() {
             </Card>
 
             {/* Status Messages */}
-            {submitStatus === 'success' && (
-              <>
-                <Card className="border-0 bg-gradient-to-r from-green-600/20 to-green-700/20 backdrop-blur-sm">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 text-green-200">
-                      <div className="p-3 bg-green-600 rounded-full">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <span className="font-semibold text-lg">{getText('successMessage')}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Shipping Process Information */}
-                <Card className="border-0 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm shadow-2xl">
-                  <CardHeader className="bg-gradient-to-r from-orange-600/20 to-orange-700/20 border-b border-orange-500/30">
-                    <CardTitle className="flex items-center gap-4">
-                      <div className="p-3 bg-orange-600 rounded-xl shadow-lg">
-                        <Globe className="h-7 w-7 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-white">
-                          {getText('shippingProcessTitle')}
-                        </h2>
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-8">
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 gap-4">
-                        <div className="flex items-start gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                          <div className="flex-shrink-0 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            1
-                          </div>
-                          <p className="text-gray-200 leading-relaxed">
-                            {getText('shippingProcess1')}
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-start gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                          <div className="flex-shrink-0 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            2
-                          </div>
-                          <p className="text-gray-200 leading-relaxed">
-                            {getText('shippingProcess2')}
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-start gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                          <div className="flex-shrink-0 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            3
-                          </div>
-                          <p className="text-gray-200 leading-relaxed">
-                            {getText('shippingProcess3')}
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-start gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                          <div className="flex-shrink-0 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            4
-                          </div>
-                          <p className="text-gray-200 leading-relaxed">
-                            {getText('shippingProcess4')}
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-start gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                          <div className="flex-shrink-0 w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            5
-                          </div>
-                          <p className="text-gray-200 leading-relaxed">
-                            {getText('shippingProcess5')}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Additional Information */}
-                      <div className="mt-8 space-y-4">
-                        <div className="p-4 bg-blue-600/20 rounded-lg border border-blue-500/30">
-                          <p className="text-blue-200 leading-relaxed font-medium">
-                            {getText('pickupService')}
-                          </p>
-                        </div>
-                        
-                        <div className="p-4 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg border border-purple-500/30">
-                          <p className="text-purple-200 leading-relaxed font-medium text-center">
-                            {getText('hipexInfo')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            )}
             
             {submitStatus === 'error' && (
               <Card className="border-0 bg-gradient-to-r from-red-600/20 to-red-700/20 backdrop-blur-sm">
@@ -680,29 +921,45 @@ export default function ShipmentRequestForm() {
                 </CardContent>
               </Card>
             </div>
-              </form>
+                </form>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Support Information */}
-        <div className="text-center mt-8 space-y-4">
-          <Card className="border-0 bg-slate-800/50 backdrop-blur-sm max-w-md mx-auto">
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <div className="flex items-center justify-center gap-3 text-gray-300">
-                  <Mail className="h-5 w-5 text-blue-400" />
-                  <span className="text-sm font-medium">SUPPORT: info@dexpell.com</span>
-                </div>
-                <div className="flex items-center justify-center gap-3 text-gray-300">
-                  <Phone className="h-5 w-5 text-green-400" />
-                  <span className="text-sm font-medium">PHONE: +90 212 852 55 00</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
+
+      {/* Success Popup */}
+      <Dialog open={showSuccessPopup} onOpenChange={setShowSuccessPopup}>
+        <DialogContent className="sm:max-w-md bg-gradient-to-br from-slate-800 to-slate-900 border-green-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold text-white flex items-center justify-center gap-3">
+              <div className="p-3 bg-green-600 rounded-full">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              {language === 'tr' ? 'Gönderim Tamamlandı!' : 'Submission Completed!'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-6">
+            <p className="text-gray-200 text-lg leading-relaxed">
+              {language === 'tr' 
+                ? 'Formunuz başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.' 
+                : 'Your form has been submitted successfully. We will contact you as soon as possible.'
+              }
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <Button
+              onClick={handleSuccessPopupClose}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-lg font-semibold"
+            >
+              {language === 'tr' ? 'Tamam' : 'OK'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

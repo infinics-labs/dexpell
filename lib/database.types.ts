@@ -52,14 +52,16 @@ export interface Database {
           sender_tc: string
           sender_address: string
           sender_contact: string
+          sender_phone_code: string | null
           receiver_name: string
           receiver_address: string
           city_postal: string
           destination: string
           receiver_contact: string
+          receiver_phone_code: string | null
           receiver_email: string
           content_description: string
-          content_value: string
+          content_value: string | null
           user_type: 'guest' | 'registered'
           user_email: string | null
           user_id: string | null
@@ -84,14 +86,16 @@ export interface Database {
           sender_tc: string
           sender_address: string
           sender_contact: string
+          sender_phone_code?: string | null
           receiver_name: string
           receiver_address: string
           city_postal: string
           destination: string
           receiver_contact: string
+          receiver_phone_code?: string | null
           receiver_email: string
           content_description: string
-          content_value: string
+          content_value?: string | null
           user_type?: 'guest' | 'registered'
           user_email?: string | null
           user_id?: string | null
@@ -116,14 +120,16 @@ export interface Database {
           sender_tc?: string
           sender_address?: string
           sender_contact?: string
+          sender_phone_code?: string | null
           receiver_name?: string
           receiver_address?: string
           city_postal?: string
           destination?: string
           receiver_contact?: string
+          receiver_phone_code?: string | null
           receiver_email?: string
           content_description?: string
-          content_value?: string
+          content_value?: string | null
           user_type?: 'guest' | 'registered'
           user_email?: string | null
           user_id?: string | null

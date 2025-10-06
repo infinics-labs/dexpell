@@ -7,7 +7,6 @@ import {
   Truck,
   CheckCircle,
   Globe,
-  AlertTriangle,
   Weight
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,10 +23,10 @@ const CARRIER_CONFIG = {
   },
   DHL: {
     name: 'DHL Express',
-    borderColor: 'border-yellow-200 dark:border-yellow-800',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-950',
-    textColor: 'text-yellow-700 dark:text-yellow-300',
-    priceColor: 'text-yellow-600 dark:text-yellow-400',
+    borderColor: 'border-orange-200 dark:border-orange-700',
+    bgColor: 'bg-orange-50 dark:bg-orange-900',
+    textColor: 'text-orange-700 dark:text-orange-300',
+    priceColor: 'text-orange-600 dark:text-orange-400',
     logoPath: '/logos/dhl-logo.png'
   },
   ARAMEX: {
@@ -71,7 +70,6 @@ export function SelectablePriceCard({
   onCarrierSelect
 }: SelectablePriceCardProps) {
   const availableQuotes = quotes.filter(q => q.available);
-  const unavailableQuotes = quotes.filter(q => !q.available);
 
   // Sort quotes by price (lowest first)
   const sortedQuotes = [...availableQuotes].sort((a, b) => a.totalPrice - b.totalPrice);
@@ -87,8 +85,6 @@ export function SelectablePriceCard({
       box: language === 'tr' ? 'kutu' : 'box',
       boxes: language === 'tr' ? 'kutu' : 'boxes',
       to: language === 'tr' ? `${country}'ya` : `To ${country}`,
-      notAvailable: language === 'tr' ? 'Mevcut Değil' : 'Not Available',
-      notAvailableFor: language === 'tr' ? `${country} için mevcut değil` : `Not available for ${country}`,
       selected: language === 'tr' ? 'Seçildi' : 'Selected'
     };
     return texts[key as keyof typeof texts] || key;
@@ -231,50 +227,6 @@ export function SelectablePriceCard({
           );
         })}
 
-        {/* Unavailable carriers */}
-        {unavailableQuotes.map((quote, index) => {
-          const config = CARRIER_CONFIG[quote.carrier];
-
-          return (
-            <motion.div
-              key={`unavailable-${quote.carrier}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: (sortedQuotes.length + index) * 0.1 }}
-            >
-              <Card className="border-gray-600 bg-gray-800/30 opacity-60">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-700 border flex items-center justify-center p-1">
-                        <Image
-                          src={config.logoPath}
-                          alt={`${quote.carrier} logo`}
-                          width={quote.carrier === 'UPS' ? 36 : 32}
-                          height={quote.carrier === 'UPS' ? 36 : 32}
-                          className="object-contain opacity-50"
-                        />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg text-gray-400">
-                          {config.name}
-                        </CardTitle>
-                        <div className="text-xs text-gray-500">{getText('notAvailable')}</div>
-                      </div>
-                    </div>
-                    <AlertTriangle className="w-5 h-5 text-gray-500" />
-                  </div>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="text-center text-gray-500">
-                    <div className="text-sm">{getText('notAvailableFor')}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
       </div>
     </div>
   );
