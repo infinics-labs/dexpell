@@ -44,6 +44,38 @@ const agents: Agent[] = [
     bgGradient: 'from-orange-500/10 to-amber-500/10',
     available: true,
     videoUrl: '/videos/nova-cargo.mp4'
+  },
+  {
+    key: 'arwen',
+    icon: Anchor,
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    bgGradient: 'from-blue-500/10 to-cyan-500/10',
+    available: false, // Not clickable
+    videoUrl: '/videos/arwen-intro.mp4' // Placeholder for future video
+  },
+  {
+    key: 'elif',
+    icon: Plane,
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    bgGradient: 'from-purple-500/10 to-pink-500/10',
+    available: false, // Not clickable
+    videoUrl: '/videos/elif-intro.mp4' // Placeholder for future video
+  },
+  {
+    key: 'lucas',
+    icon: Truck,
+    iconColor: 'text-green-600 dark:text-green-400',
+    bgGradient: 'from-green-500/10 to-emerald-500/10',
+    available: false, // Not clickable
+    videoUrl: '/videos/lucas-intro.mp4' // Placeholder for future video
+  },
+  {
+    key: 'sofia',
+    icon: Globe,
+    iconColor: 'text-red-600 dark:text-red-400',
+    bgGradient: 'from-red-500/10 to-rose-500/10',
+    available: false, // Not clickable
+    videoUrl: '/videos/sofia-intro.mp4' // Placeholder for future video
   }
 ];
 
@@ -53,8 +85,9 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
 
-  // Layout: Only Nova agent
-  const novaAgent = agents[0]; // Nova
+  // Layout: Nova on top (first agent), then 4 agents in bottom row
+  const topAgent = agents[0]; // Nova
+  const bottomRowAgents = agents.slice(1, 5); // All other 4 agents
 
   const handleAgentClick = (agent: Agent) => {
     if (agent.available) {
@@ -104,12 +137,6 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
             </div>
           )}
           
-          {/* Coming soon badge */}
-          {!agent.available && (
-            <div className="absolute right-3 top-3 z-10 rounded-full bg-orange-500 px-2 py-1 text-xs font-semibold text-white sm:right-4 sm:top-4 sm:px-3">
-              Launching {agent.launchDate}
-            </div>
-          )}
           
           <div className="relative z-10 flex h-full flex-col p-4 sm:p-6">
             {/* Agent icon and info */}
@@ -189,9 +216,14 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
           </p>
         </motion.div>
 
-        {/* Nova Agent (centered) */}
-        <div className="flex justify-center">
-          {renderAgentCard(novaAgent, 0)}
+        {/* Top row - Nova (centered) */}
+        <div className="mb-8 flex justify-center">
+          {renderAgentCard(topAgent, 0)}
+        </div>
+
+        {/* Bottom row - 4 agents */}
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {bottomRowAgents.map((agent, index) => renderAgentCard(agent, index + 1))}
         </div>
       </div>
 
