@@ -43,7 +43,7 @@ const agents: Agent[] = [
     iconColor: 'text-orange-600 dark:text-orange-400',
     bgGradient: 'from-orange-500/10 to-amber-500/10',
     available: true,
-    videoUrl: '/videos/nova-intro.mp4' // Placeholder for future video
+    videoUrl: '/videos/nova-cargo.mp4'
   },
   {
     key: 'arwen',
@@ -148,8 +148,16 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
           <div className="relative z-10 flex h-full flex-col p-4 sm:p-6">
             {/* Agent icon and info */}
             <div className="mb-4 text-center sm:mb-6">
-              <div className={`mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-white shadow-lg transition-transform group-hover:scale-110 dark:bg-gray-900 sm:mb-4 sm:size-20`}>
-                <Icon className={`size-8 sm:size-10 ${agent.iconColor}`} />
+              <div className={`mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-white shadow-lg transition-transform group-hover:scale-110 dark:bg-gray-900 sm:mb-4 sm:size-20 overflow-hidden`}>
+                {agent.key === 'nova' ? (
+                  <img 
+                    src="/videos/nova-pp.png" 
+                    alt={`${name} profile`}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <Icon className={`size-8 sm:size-10 ${agent.iconColor}`} />
+                )}
               </div>
               <h3 className="mb-1 text-lg font-bold sm:text-xl">{name}</h3>
               <p className="text-xs font-medium text-muted-foreground sm:text-sm">{title}</p>
@@ -253,8 +261,16 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
                 {/* Modal Header */}
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div className={`flex size-10 sm:size-12 items-center justify-center rounded-full bg-white shadow-lg dark:bg-gray-900 shrink-0`}>
-                      <selectedAgent.icon className={`size-5 sm:size-6 ${selectedAgent.iconColor}`} />
+                    <div className={`flex size-10 sm:size-12 items-center justify-center rounded-full bg-white shadow-lg dark:bg-gray-900 shrink-0 overflow-hidden`}>
+                      {selectedAgent.key === 'nova' ? (
+                        <img 
+                          src="/videos/nova-pp.png" 
+                          alt={`${translate(language, `digitalTeam.agents.${selectedAgent.key}.name`)} profile`}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <selectedAgent.icon className={`size-5 sm:size-6 ${selectedAgent.iconColor}`} />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-lg sm:text-xl font-bold truncate">{translate(language, `digitalTeam.agents.${selectedAgent.key}.name`)}</h3>
@@ -273,32 +289,33 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
 
                 {/* Video Content */}
                 <div className="aspect-video bg-muted/20 flex items-center justify-center p-4 sm:p-8">
-                  {/* Placeholder for video - ready for implementation */}
-                  <div className="text-center space-y-3 sm:space-y-4 max-w-md mx-auto">
-                    <div className="mx-auto size-16 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Play className="size-6 sm:size-8 text-primary" />
+                  {selectedAgent.key === 'nova' ? (
+                    <video 
+                      controls 
+                      className="w-full h-full rounded-lg"
+                      autoPlay
+                      muted
+                    >
+                      <source src={selectedAgent.videoUrl} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    /* Placeholder for other agents */
+                    <div className="text-center space-y-3 sm:space-y-4 max-w-md mx-auto">
+                      <div className="mx-auto size-16 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Play className="size-6 sm:size-8 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="text-base sm:text-lg font-semibold mb-2">{translate(language, 'digitalTeam.modal.videoComingSoon')}</h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground px-2">
+                          {translate(language, `digitalTeam.agents.${selectedAgent.key}.name`)}{translate(language, 'digitalTeam.modal.videoDescription')}
+                        </p>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {translate(language, 'digitalTeam.modal.videoUrl')} {selectedAgent.videoUrl}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-base sm:text-lg font-semibold mb-2">{translate(language, 'digitalTeam.modal.videoComingSoon')}</h4>
-                      <p className="text-xs sm:text-sm text-muted-foreground px-2">
-                        {translate(language, `digitalTeam.agents.${selectedAgent.key}.name`)}{translate(language, 'digitalTeam.modal.videoDescription')}
-                      </p>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {translate(language, 'digitalTeam.modal.videoUrl')} {selectedAgent.videoUrl}
-                    </div>
-                  </div>
-                  
-                  {/* This will be replaced with actual video player when videos are available
-                  <video 
-                    controls 
-                    className="w-full h-full rounded-lg"
-                    poster="/images/video-poster.jpg"
-                  >
-                    <source src={selectedAgent.videoUrl} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  */}
+                  )}
                 </div>
 
                 {/* Modal Footer */}

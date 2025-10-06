@@ -390,6 +390,7 @@ export function LandingPage() {
 
       {/* About Us Section */}
       <motion.section
+        id="about-us"
         className="bg-gradient-to-br from-muted/30 via-background to-muted/30 py-12 sm:py-16 lg:py-20"
         initial="hidden"
         whileInView="visible"
@@ -518,18 +519,13 @@ export function LandingPage() {
               </h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="#" className="hover:text-primary">
+                  <Link href="#about-us" className="hover:text-primary">
                     {translate(language, 'nav.aboutUs')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-primary">
                     {translate(language, 'nav.contact')}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-primary">
-                    {translate(language, 'nav.careers')}
                   </Link>
                 </li>
               </ul>
@@ -545,7 +541,7 @@ export function LandingPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-primary">
+                  <Link href="https://www.linkedin.com/company/dexpelllogistics/" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
                     {translate(language, 'nav.linkedin')}
                   </Link>
                 </li>
