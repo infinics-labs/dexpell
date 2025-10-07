@@ -25,3 +25,4 @@ FROM information_schema.columns
 WHERE table_name = 'form_submissions' 
 AND column_name IN ('sender_phone_code', 'receiver_phone_code', 'content_value')
 ORDER BY column_name;
+

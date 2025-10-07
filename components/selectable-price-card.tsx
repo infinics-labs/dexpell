@@ -69,6 +69,9 @@ export function SelectablePriceCard({
   selectedCarrier,
   onCarrierSelect
 }: SelectablePriceCardProps) {
+  // Calculate final quantity with proper fallback logic
+  const finalQuantity = quantity ?? 1;
+  
   const availableQuotes = quotes.filter(q => q.available);
 
   // Sort quotes by price (lowest first)
@@ -201,7 +204,7 @@ export function SelectablePriceCard({
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-300">
                       <Package className="w-4 h-4" />
-                      <span>{quantity} {quantity !== 1 ? getText('boxes') : getText('box')}</span>
+                      <span>{finalQuantity} {finalQuantity !== 1 ? getText('boxes') : getText('box')}</span>
                     </div>
                     {(quote.chargeableWeight || totalWeight) && (
                       <div className="flex items-center gap-2 text-sm text-gray-300">

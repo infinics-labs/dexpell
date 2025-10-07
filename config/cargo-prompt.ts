@@ -565,13 +565,13 @@ ONLY WRITE THIS EXACT TEXT:
 
 **THIS IS THE FINAL RULE - NO EXCEPTIONS**`;
 
-export const CARGO_INITIAL_MESSAGE = `Welcome to Dexpell Express Cargo Pricing! 🚚
+export const CARGO_INITIAL_MESSAGE = `Hello! I'm Nova 😊
+I handle courier transportation pricing at Dexpell.
+Shall I calculate the most suitable price for you right away?
 
-I can help you calculate shipping costs for your international shipments from Turkey. I'll need to ask you a few questions to provide an accurate quote.
-
-**Dexpell Express'e Hoş Geldiniz!** 🚚
-
-Türkiye'den uluslararası gönderileriniz için kargo maliyetlerini hesaplamanıza yardımcı olabilirim. Size doğru bir fiyat teklifi verebilmek için birkaç soru sormam gerekecek.
+**Selam! Ben Nova 😊**
+Dexpell'de kurye taşımacılığı fiyatlandırmasını ben yapıyorum.
+Hemen sizin için en uygun fiyatı hesaplayayım mı?
 
 ---
 

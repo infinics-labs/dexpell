@@ -83,6 +83,9 @@ export function SingleCarrierQuoteDisplay({
   region,
   isDraft = false,
 }: SingleCarrierQuoteDisplayProps) {
+  // Calculate final quantity with proper fallback logic
+  const finalQuantity = quantity ?? 1;
+  
   const config = CARRIER_CONFIG[carrier];
   const dimensions = length && width && height ? { length, width, height } : undefined;
 
@@ -132,7 +135,7 @@ export function SingleCarrierQuoteDisplay({
           
           <div className="space-y-1">
             <p className="text-muted-foreground">Quantity:</p>
-            <p className="font-medium">{quantity} box{quantity === 1 ? '' : 'es'}</p>
+            <p className="font-medium">{finalQuantity} box{finalQuantity === 1 ? '' : 'es'}</p>
           </div>
           
           <div className="space-y-1">
@@ -240,7 +243,7 @@ export function SingleCarrierQuoteDisplay({
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Package className="size-4" />
-            <span>{quantity} box{quantity !== 1 ? 'es' : ''}</span>
+            <span>{finalQuantity} box{finalQuantity !== 1 ? 'es' : ''}</span>
           </div>
           {chargeableWeight && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

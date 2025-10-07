@@ -57,7 +57,7 @@ function ApiCallCell({ toolCall }: ToolCallProps) {
                   <MultiCarrierQuotesDisplay
                     country={data.country}
                     quotes={data.quotes}
-                    quantity={data.quantity}
+                    quantity={data.dimensionalAnalysis?.totalBoxes || data.summary?.totalBoxes || data.quantity}
                     boxCalculations={data.boxCalculations}
                     dimensionalAnalysis={data.dimensionalAnalysis}
                     showDetailedAnalysis={data.scenario === 'mixed_boxes'}

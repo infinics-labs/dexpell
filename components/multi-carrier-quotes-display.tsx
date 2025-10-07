@@ -60,6 +60,9 @@ export function MultiCarrierQuotesDisplay({
 }: MultiCarrierQuotesDisplayProps) {
   const { setPriceCardData } = usePriceCardStore();
   
+  // Calculate final quantity with proper fallback logic for mixed boxes
+  const finalQuantity = quantity ?? dimensionalAnalysis?.totalBoxes ?? 1;
+  
   // Save price card data to store when component mounts (chat'i etkilemez)
   useEffect(() => {
     try {
@@ -67,7 +70,7 @@ export function MultiCarrierQuotesDisplay({
         setPriceCardData({
           country,
           quotes,
-          quantity,
+          quantity: finalQuantity,
           totalWeight: dimensionalAnalysis?.chargeableWeightTotal,
           timestamp: Date.now(),
         });
@@ -76,7 +79,7 @@ export function MultiCarrierQuotesDisplay({
       // Hata olursa sadece log yaz, chat'i etkileme
       console.log('Price card store error (non-critical):', error);
     }
-  }, [country, quotes, quantity, dimensionalAnalysis?.chargeableWeightTotal, setPriceCardData]);
+  }, [country, quotes, finalQuantity, dimensionalAnalysis?.chargeableWeightTotal, setPriceCardData]);
   
   // Use the enhanced price card component
   return (
@@ -86,7 +89,7 @@ export function MultiCarrierQuotesDisplay({
         quotes={quotes}
         boxCalculations={boxCalculations}
         dimensionalAnalysis={dimensionalAnalysis}
-        quantity={quantity}
+        quantity={finalQuantity}
         totalWeight={undefined}
         showDetailedAnalysis={showDetailedAnalysis}
         language={language}

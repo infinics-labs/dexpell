@@ -109,8 +109,8 @@ export const messages: Record<SupportedLanguage, Messages> = {
       placeholder: "Ask about shipping costs (e.g. '5kg to Germany')...",
       wait: 'Please wait for the model to finish its response!',
       welcome: {
-        title: 'Welcome to Dexpell Cargo Pricing!',
-        subtitle: 'Get instant shipping quotes to anywhere in the world',
+        title: 'Hello! I\'m Nova 😊',
+        subtitle: 'I handle courier transportation pricing at Dexpell. Shall I calculate the most suitable price for you right away?',
       },
       suggestions: {
         quote: {
@@ -316,8 +316,8 @@ export const messages: Record<SupportedLanguage, Messages> = {
       placeholder: "Kargo maliyetlerini sorun (ör. '5kg Almanya')...",
       wait: 'Lütfen modelin yanıtını tamamlamasını bekleyin! ',
       welcome: {
-        title: 'Dexpell Kargo Fiyatlandırmasına Hoş Geldiniz!',
-        subtitle: 'Dünyanın her yerine anında kargo fiyat teklifi alın',
+        title: 'Selam! Ben Nova 😊',
+        subtitle: 'Dexpell\'de kurye taşımacılığı fiyatlandırmasını ben yapıyorum. Hemen sizin için en uygun fiyatı hesaplayayım mı?',
       },
       suggestions: {
         quote: {
