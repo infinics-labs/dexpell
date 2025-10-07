@@ -6,10 +6,12 @@ import { memo } from 'react';
 import { LanguageSwitcher } from './language-switcher';
 import { translate, type SupportedLanguage } from '@/lib/i18n';
 import { useEffect, useState } from 'react';
+import useConversationStore from '@/stores/useConversationStore';
 
 function PureDexpellChatHeader() {
   const router = useRouter();
   const [lang, setLang] = useState<SupportedLanguage>('en');
+  const { setLanguage: setConversationLanguage, updateInitialMessage } = useConversationStore();
   
   useEffect(() => {
     const cookie = document.cookie
@@ -17,9 +19,13 @@ function PureDexpellChatHeader() {
       .find((c) => c.startsWith('lang='));
     if (cookie) {
       const value = cookie.split('=')[1] as SupportedLanguage;
-      if (value === 'en' || value === 'tr') setLang(value);
+      if (value === 'en' || value === 'tr') {
+        setLang(value);
+        setConversationLanguage(value);
+        updateInitialMessage();
+      }
     }
-  }, []);
+  }, [setConversationLanguage, updateInitialMessage]);
 
   return (
     <header className="flex sticky top-0 bg-background py-2 sm:py-1.5 items-center px-3 sm:px-2 md:px-2 gap-2 border-b sm:border-b-0 safe-area-inset-top">

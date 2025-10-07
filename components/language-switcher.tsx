@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import type { SupportedLanguage } from '@/lib/i18n';
+import useConversationStore from '@/stores/useConversationStore';
 
 export function LanguageSwitcher() {
   const [lang, setLang] = useState<SupportedLanguage>('en');
+  const { setLanguage: setConversationLanguage, updateInitialMessage } = useConversationStore();
 
   useEffect(() => {
     const cookie = document.cookie
@@ -13,16 +15,25 @@ export function LanguageSwitcher() {
       .find((c) => c.startsWith('lang='));
     if (cookie) {
       const value = cookie.split('=')[1] as SupportedLanguage;
-      if (value === 'en' || value === 'tr') setLang(value);
+      if (value === 'en' || value === 'tr') {
+        setLang(value);
+        setConversationLanguage(value);
+        updateInitialMessage();
+      }
     } else {
       // default from browser
       const isTR = navigator.language.toLowerCase().includes('tr');
-      setLang(isTR ? 'tr' : 'en');
+      const defaultLang = isTR ? 'tr' : 'en';
+      setLang(defaultLang);
+      setConversationLanguage(defaultLang);
+      updateInitialMessage();
     }
-  }, []);
+  }, [setConversationLanguage, updateInitialMessage]);
 
   const setLanguage = (value: SupportedLanguage) => {
     setLang(value);
+    setConversationLanguage(value);
+    updateInitialMessage();
     const expires = new Date(Date.now() + 365 * 24 * 3600 * 1000).toUTCString();
     document.cookie = `lang=${value}; path=/; expires=${expires}`;
     // force re-render of server components by navigating

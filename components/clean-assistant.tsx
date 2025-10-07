@@ -1,13 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CleanChat } from './clean-chat';
 import useConversationStore from '@/stores/useConversationStore';
 import { Item, processMessages } from '@/lib/assistant';
 
 export default function CleanAssistant() {
-  const { chatMessages, addConversationItem, addChatMessage, setAssistantLoading } =
+  const { chatMessages, addConversationItem, addChatMessage, setAssistantLoading, initializeLanguage } =
     useConversationStore();
+
+  // Initialize language on component mount
+  useEffect(() => {
+    initializeLanguage();
+  }, [initializeLanguage]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;

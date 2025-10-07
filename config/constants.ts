@@ -50,10 +50,21 @@ export function getDeveloperPrompt(): string {
 // Here is the context that you have available to you:
 // ${context}
 
-// Initial message that will be displayed in the chat
-export const INITIAL_MESSAGE = `
-Hi, how can I help you?
-`;
+// Function to get initial message based on language
+export function getInitialMessage(language: 'en' | 'tr' = 'en'): string {
+  if (language === 'tr') {
+    return `Selam! Ben Nova 😊
+Dexpell'de kurye taşımacılığı fiyatlandırmasını ben yapıyorum.
+Hemen sizin için en uygun fiyatı hesaplayayım mı?`;
+  }
+  
+  return `Hello! I'm Nova 😊
+I handle courier transportation pricing at Dexpell.
+Shall I calculate the most suitable price for you right away?`;
+}
+
+// Default initial message (English)
+export const INITIAL_MESSAGE = getInitialMessage('en');
 
 export const defaultVectorStore = {
   id: "",
