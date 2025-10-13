@@ -53,14 +53,10 @@ export function getDeveloperPrompt(): string {
 // Function to get initial message based on language
 export function getInitialMessage(language: 'en' | 'tr' = 'en'): string {
   if (language === 'tr') {
-    return `Selam! Ben Nova 😊
-Dexpell'de kurye taşımacılığı fiyatlandırmasını ben yapıyorum.
-Hemen sizin için en uygun fiyatı hesaplayayım mı?`;
+    return `Merhaba, size nasıl yardımcı olabilirim?`;
   }
   
-  return `Hello! I'm Nova 😊
-I handle courier transportation pricing at Dexpell.
-Shall I calculate the most suitable price for you right away?`;
+  return `Hi, how can I help you?`;
 }
 
 // Default initial message (English)

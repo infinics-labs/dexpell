@@ -33,10 +33,10 @@ export function LanguageSwitcher() {
   const setLanguage = (value: SupportedLanguage) => {
     setLang(value);
     setConversationLanguage(value);
-    updateInitialMessage();
     const expires = new Date(Date.now() + 365 * 24 * 3600 * 1000).toUTCString();
     document.cookie = `lang=${value}; path=/; expires=${expires}`;
-    // force re-render of server components by navigating
+    
+    // Always reload the page when language is changed to ensure everything is in the correct language
     window.location.reload();
   };
 

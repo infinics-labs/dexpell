@@ -2,10 +2,11 @@ import { create } from "zustand";
 import { Item } from "@/lib/assistant";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { getInitialMessage } from "@/config/constants";
-import { CARGO_INITIAL_MESSAGE } from "@/config/cargo-prompt";
+import { getCargoInitialMessage } from "@/config/cargo-prompt";
 
 // Function to get language from cookie or browser
 function getInitialLanguage(): 'en' | 'tr' {
+  // Always return 'en' during SSR to prevent hydration mismatch
   if (typeof window === 'undefined') return 'en';
   
   try {
@@ -55,7 +56,8 @@ interface ConversationState {
 }
 
 const useConversationStore = create<ConversationState>((set, get) => {
-  const initialLanguage = getInitialLanguage();
+  // Always start with English to prevent hydration mismatch
+  const initialLanguage = 'en';
   const initialMessage = getInitialMessage(initialLanguage);
   
   return {
@@ -85,7 +87,7 @@ const useConversationStore = create<ConversationState>((set, get) => {
       const state = get();
       const currentMode = state.assistantMode;
       const currentLanguage = state.language;
-      const initialMessage = currentMode === 'cargo' ? CARGO_INITIAL_MESSAGE : getInitialMessage(currentLanguage);
+      const initialMessage = currentMode === 'cargo' ? getCargoInitialMessage(currentLanguage) : getInitialMessage(currentLanguage);
       
       // Update only the first message (initial message)
       set((state) => ({
@@ -100,27 +102,26 @@ const useConversationStore = create<ConversationState>((set, get) => {
       const detectedLanguage = getInitialLanguage();
       const state = get();
       
-      // Only update if language is different
-      if (state.language !== detectedLanguage) {
-        set({ language: detectedLanguage });
-        // Update the initial message with the correct language
-        const currentMode = state.assistantMode;
-        const initialMessage = currentMode === 'cargo' ? CARGO_INITIAL_MESSAGE : getInitialMessage(detectedLanguage);
-        
-        set((state) => ({
-          chatMessages: state.chatMessages.map((msg, index) => 
-            index === 0 && msg.type === 'message' && msg.role === 'assistant'
-              ? { ...msg, content: [{ type: "output_text", text: initialMessage }] }
-              : msg
-          ),
-        }));
-      }
+      // Always update language and message on initialization
+      set({ language: detectedLanguage });
+      
+      // Update the initial message with the correct language
+      const currentMode = state.assistantMode;
+      const initialMessage = currentMode === 'cargo' ? getCargoInitialMessage(detectedLanguage) : getInitialMessage(detectedLanguage);
+      
+      set((state) => ({
+        chatMessages: state.chatMessages.map((msg, index) => 
+          index === 0 && msg.type === 'message' && msg.role === 'assistant'
+            ? { ...msg, content: [{ type: "output_text", text: initialMessage }] }
+            : msg
+        ),
+      }));
     },
     rawSet: set,
     resetConversation: () => {
       const currentMode = get().assistantMode;
       const currentLanguage = get().language;
-      const initialMessage = currentMode === 'cargo' ? CARGO_INITIAL_MESSAGE : getInitialMessage(currentLanguage);
+      const initialMessage = currentMode === 'cargo' ? getCargoInitialMessage(currentLanguage) : getInitialMessage(currentLanguage);
       
       set(() => ({
         chatMessages: [

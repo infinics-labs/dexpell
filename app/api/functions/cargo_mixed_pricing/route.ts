@@ -11,7 +11,10 @@ import {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { content, country, boxes } = body;
+    const { content, country, boxes, language } = body;
+
+    // Detect language from content if not explicitly provided
+    const detectedLanguage = language || (content && content.match(/\b(kargo|gönderi|kutu|kilogram|boyut|fiyat|türkiye|almanya|gönderim|teslim|ücret|genel|tahmini)\b/i) ? 'tr' : 'en');
 
     // Validate required fields
     if (!content) {
@@ -67,7 +70,8 @@ export async function POST(request: Request) {
         content,
         country,
         boxes: boxes as BoxDetails[],
-        carrier: 'UPS'
+        carrier: 'UPS',
+        language: detectedLanguage
       });
       
       if (upsResult.allowed && upsResult.success && upsResult.data) {
@@ -79,6 +83,8 @@ export async function POST(request: Request) {
           region: upsResult.data.region,
           chargeableWeight: upsResult.data.chargeableWeight,
         });
+      } else if (upsResult.skipCarrier) {
+        // Skip UPS silently - don't add to quotes
       } else {
         quotes.push({
           carrier: 'UPS',
@@ -105,7 +111,8 @@ export async function POST(request: Request) {
         content,
         country,
         boxes: boxes as BoxDetails[],
-        carrier: 'DHL'
+        carrier: 'DHL',
+        language: detectedLanguage
       });
       
       if (dhlResult.allowed && dhlResult.success && dhlResult.data) {
@@ -117,6 +124,8 @@ export async function POST(request: Request) {
           region: dhlResult.data.region,
           chargeableWeight: dhlResult.data.chargeableWeight,
         });
+      } else if (dhlResult.skipCarrier) {
+        // Skip DHL silently - don't add to quotes
       } else {
         quotes.push({
           carrier: 'DHL',

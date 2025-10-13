@@ -7,6 +7,7 @@ import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { MultiCarrierQuotesDisplay } from "./multi-carrier-quotes-display";
 import { SingleCarrierQuoteDisplay } from "./single-carrier-quote-display";
 import { ShippingProcessMessage } from "./shipping-process-message";
+import useConversationStore from "@/stores/useConversationStore";
 
 interface ToolCallProps {
   toolCall: ToolCallItem;
@@ -27,6 +28,9 @@ function detectLanguage(content: string): 'en' | 'tr' {
 }
 
 function ApiCallCell({ toolCall }: ToolCallProps) {
+  // Get current language from conversation store
+  const { language } = useConversationStore();
+  
   // Check if this is a cargo pricing function with results
   const isCargoFunction = ['cargo_multi_pricing', 'cargo_pricing', 'cargo_draft_pricing', 'cargo_mixed_pricing'].includes(toolCall.name || '') && toolCall.output;
   
@@ -38,8 +42,7 @@ function ApiCallCell({ toolCall }: ToolCallProps) {
         
         // Multi-carrier pricing
         if (result.multiCarrier && data && data.quotes) {
-          // Detect language from the content or use function input
-          const language = detectLanguage(data.content || toolCall.args?.content || '');
+          // Use language from conversation store
           
           return (
             <div className="flex flex-col w-full relative mb-4">
@@ -78,10 +81,10 @@ function ApiCallCell({ toolCall }: ToolCallProps) {
                 <Truck size={16} />
                 <div className="text-sm font-medium">
                   {toolCall.status === "completed"
-                    ? (detectLanguage(data.content || toolCall.args?.content || '') === 'tr' 
+                    ? (language === 'tr' 
                         ? `${result.isDraft ? 'Taslak kargo teklifi' : 'Kargo teklifi'} hesaplandı`
                         : `${result.isDraft ? 'Draft shipping quote' : 'Shipping quote'} calculated`)
-                    : (detectLanguage(data.content || toolCall.args?.content || '') === 'tr' 
+                    : (language === 'tr' 
                         ? "Kargo teklifi hesaplanıyor..." 
                         : "Calculating shipping quote...")}
                 </div>
@@ -105,7 +108,7 @@ function ApiCallCell({ toolCall }: ToolCallProps) {
                     region={data.region}
                     isDraft={result.isDraft || false}
                   />
-                  <ShippingProcessMessage language={detectLanguage(data.content || toolCall.args?.content || '')} />
+                  <ShippingProcessMessage language={language} />
                 </>
               )}
             </div>

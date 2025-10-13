@@ -46,6 +46,11 @@ export const cargoFunctionDefinitions = [
           type: 'number',
           description: 'Number of identical boxes/packages (default is 1)',
         },
+        language: {
+          type: 'string',
+          enum: ['en', 'tr'],
+          description: 'Language for error messages and responses (en for English, tr for Turkish)',
+        },
       },
       required: ['content'],
       additionalProperties: false,
@@ -85,6 +90,11 @@ export const cargoFunctionDefinitions = [
         quantity: {
           type: 'number',
           description: 'Number of identical boxes/packages (default is 1)',
+        },
+        language: {
+          type: 'string',
+          enum: ['en', 'tr'],
+          description: 'Language for error messages and responses (en for English, tr for Turkish)',
         },
       },
       required: ['content'],
@@ -136,6 +146,11 @@ export const cargoFunctionDefinitions = [
             required: ['weight', 'length', 'width', 'height'],
             additionalProperties: false,
           },
+        },
+        language: {
+          type: 'string',
+          enum: ['en', 'tr'],
+          description: 'Language for error messages and responses (en for English, tr for Turkish)',
         },
       },
       required: ['content', 'country', 'boxes'],

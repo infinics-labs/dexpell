@@ -92,7 +92,9 @@ const countryTranslations: Record<string, string> = {
   'norway': 'norvec',
   'finland': 'finlandiya',
   'poland': 'polonya',
-  'czech republic': 'cek cumhuriyeti',
+  'czech republic': 'cekya',
+  'czechia': 'cekya',
+  'czechia republic': 'cekya',
   'hungary': 'macaristan',
   'romania': 'romanya',
   'bulgaria': 'bulgaristan',
@@ -397,7 +399,6 @@ const cityToCountryMapping: Record<string, string> = {
   'quebec city': 'canada',
   'hamilton': 'canada',
   'kitchener': 'canada',
-  'london': 'canada',
   'victoria': 'canada',
   'halifax': 'canada',
   'oshawa': 'canada',
@@ -620,6 +621,20 @@ const prohibitedItems = [
 function isProhibitedItem(content: string): boolean {
   const lowerContent = content.toLowerCase();
   return prohibitedItems.some(item => lowerContent.includes(item));
+}
+
+// Language-specific weight limit messages
+function getWeightLimitMessage(type: '300kg' | 'dhl70kg', language?: 'en' | 'tr'): string {
+  if (type === '300kg') {
+    return language === 'tr' 
+      ? '300 kilogramı geçen gönderimler için sizi hava kargo departmanımıza yönlendirmemiz gerekmektedir. Hava kargo departmanımıza air@dexpell.com üzerinden ulaşabilirsiniz.'
+      : 'Total chargeable weight exceeds 300kg limit. Please contact our air cargo department for shipments over 300kg at air@dexpell.com';
+  } else if (type === 'dhl70kg') {
+    return language === 'tr'
+      ? 'DHL hacimsel ağırlık 70kg sınırını aşıyor. Bu gönderi için lütfen UPS veya ARAMEX kullanın. Deniz kargo için sea@dexpell.com adresinden iletişime geçebilirsiniz.'
+      : 'DHL volumetric weight exceeds 70kg limit. Please use UPS or ARAMEX for this shipment. For sea cargo, contact sea@dexpell.com';
+  }
+  return 'Weight limit exceeded. Please contact our support team.';
 }
 
 // Calculate chargeable weight per box with enhanced dimensional analysis
@@ -1188,6 +1203,7 @@ export async function calculateMixedBoxPricing(params: {
   country: string;
   boxes: BoxDetails[];
   carrier?: 'UPS' | 'DHL';
+  language?: 'en' | 'tr';
 }) {
   const { content, country, boxes } = params;
   
@@ -1219,16 +1235,18 @@ export async function calculateMixedBoxPricing(params: {
     return {
       allowed: true,
       error: true,
-      message: 'Total chargeable weight exceeds 300kg limit. Please contact our air cargo department for shipments over 300kg.',
+      message: getWeightLimitMessage('300kg', params.language),
     };
   }
   
-  // Check DHL volumetric weight limit - no pricing if total volumetric weight > 70kg
-  if (carrier === 'DHL' && mixedBoxCalculation.summary.totalVolumetricWeight > 70) {
+  // Check DHL chargeable weight limit - skip DHL silently if total chargeable weight > 70kg
+  if (carrier === 'DHL' && mixedBoxCalculation.totalChargeableWeight > 70) {
+    // Return success but with no data to skip DHL silently
     return {
       allowed: true,
-      error: true,
-      message: 'DHL volumetric weight exceeds 70kg limit. Please use UPS or ARAMEX for this shipment.',
+      success: false,
+      skipCarrier: true,
+      data: null,
     };
   }
   
@@ -1327,6 +1345,7 @@ export async function calculateUPSDHLPricing(params: {
   height?: number;
   quantity?: number;
   carrier?: 'UPS' | 'DHL';
+  language?: 'en' | 'tr';
 }) {
   const { content, country, weight, length, width, height, quantity = 1 } = params;
   
@@ -1360,16 +1379,18 @@ export async function calculateUPSDHLPricing(params: {
     return {
       allowed: true,
       error: true,
-      message: 'Total chargeable weight exceeds 300kg limit. Please contact our air cargo department for shipments over 300kg.',
+      message: getWeightLimitMessage('300kg', params.language),
     };
   }
 
-  // Check DHL volumetric weight limit - no pricing if volumetric weight > 70kg
-  if (carrier === 'DHL' && weightCalc.volumetricWeight > 70) {
+  // Check DHL chargeable weight limit - skip DHL silently if chargeable weight > 70kg
+  if (carrier === 'DHL' && weightCalc.chargeableWeight > 70) {
+    // Return success but with no data to skip DHL silently
     return {
       allowed: true,
-      error: true,
-      message: 'DHL volumetric weight exceeds 70kg limit. Please use UPS or ARAMEX for this shipment.',
+      success: false,
+      skipCarrier: true,
+      data: null,
     };
   }
 
@@ -1472,6 +1493,7 @@ export async function calculateEnhancedMultiCarrierPricing(params: {
   quantity?: number;
   boxes?: BoxDetails[];
   carriers?: ('UPS' | 'DHL' | 'ARAMEX')[];
+  language?: 'en' | 'tr';
 }) {
   const { content, country, weight, length, width, height, quantity = 1, boxes, carriers = ['UPS', 'DHL', 'ARAMEX'] } = params;
   
@@ -1496,7 +1518,7 @@ export async function calculateEnhancedMultiCarrierPricing(params: {
         return {
           allowed: true,
           error: true,
-          message: 'Total chargeable weight exceeds 300kg limit. Please contact our air cargo department for shipments over 300kg.',
+          message: getWeightLimitMessage('300kg', params.language),
         };
       }
 
@@ -1536,15 +1558,9 @@ export async function calculateEnhancedMultiCarrierPricing(params: {
         } else {
           // UPS/DHL mixed box pricing
           try {
-            // Skip DHL if volumetric weight is over 70kg
-            if (carrier === 'DHL' && mixedCalculation.summary.totalVolumetricWeight > 70) {
-              quotes.push({
-                carrier: 'DHL',
-                available: false,
-                totalPrice: 0,
-                serviceType: 'DHL Express',
-                message: 'DHL volumetric weight exceeds 70kg limit'
-              });
+            // Skip DHL silently if chargeable weight is over 70kg
+            if (carrier === 'DHL' && mixedCalculation.totalChargeableWeight > 70) {
+              // Skip DHL completely - don't add to quotes
               continue;
             }
 
@@ -1613,7 +1629,7 @@ export async function calculateEnhancedMultiCarrierPricing(params: {
     return {
       allowed: true,
       error: true,
-      message: 'Total chargeable weight exceeds 300kg limit. Please contact our air cargo department for shipments over 300kg.',
+      message: getWeightLimitMessage('300kg', params.language),
     };
   }
 
@@ -1659,15 +1675,9 @@ export async function calculateEnhancedMultiCarrierPricing(params: {
     } else {
       // UPS/DHL pricing
       try {
-        // Skip DHL if volumetric weight is over 70kg
-        if (carrier === 'DHL' && weightCalc.volumetricWeight > 70) {
-          quotes.push({
-            carrier: 'DHL',
-            available: false,
-            totalPrice: 0,
-            serviceType: 'DHL Express',
-            message: 'DHL volumetric weight exceeds 70kg limit'
-          });
+        // Skip DHL silently if chargeable weight is over 70kg
+        if (carrier === 'DHL' && weightCalc.chargeableWeight > 70) {
+          // Skip DHL completely - don't add to quotes
           continue;
         }
 

@@ -177,6 +177,12 @@ export async function GET(request: Request) {
   const width = searchParams.get('width') ? parseFloat(searchParams.get('width')!) : undefined;
   const height = searchParams.get('height') ? parseFloat(searchParams.get('height')!) : undefined;
   const quantity = searchParams.get('quantity') ? parseInt(searchParams.get('quantity')!) : 1;
+  const language = searchParams.get('language') as 'en' | 'tr' || 'en';
+
+  // Detect language from content if not explicitly provided
+  const detectedLanguage = language === 'en' && content ? 
+    (content.match(/\b(kargo|gönderi|kutu|kilogram|boyut|fiyat|türkiye|almanya|gönderim|teslim|ücret|genel|tahmini)\b/i) ? 'tr' : 'en') : 
+    language;
 
   try {
     // If only content is provided, just return content check result
@@ -277,6 +283,7 @@ export async function GET(request: Request) {
             height,
             quantity,
             carrier: carrier as 'UPS' | 'DHL',
+            language: detectedLanguage,
           });
 
           if (result.success && result.data) {
@@ -298,6 +305,9 @@ export async function GET(request: Request) {
               dimensions: result.data.length && result.data.width && result.data.height ? 
                 `${result.data.length}×${result.data.width}×${result.data.height}cm` : undefined,
             });
+          } else if (result.skipCarrier) {
+            // Skip this carrier silently - don't add to quotes
+            continue;
           } else if (result.error && result.message?.includes('not found in the')) {
             quotes.push({
               carrier: carrier as 'UPS' | 'DHL',
@@ -320,7 +330,7 @@ export async function GET(request: Request) {
 
     // If no quotes were obtained, return the base result
     if (quotes.length === 0) {
-      const fallbackResult = await calculateUPSDHLPricing({ content, country, weight, length, width, height, quantity });
+      const fallbackResult = await calculateUPSDHLPricing({ content, country, weight, length, width, height, quantity, language: detectedLanguage });
       return NextResponse.json(fallbackResult);
     }
 

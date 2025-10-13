@@ -3,6 +3,7 @@ export const cargoMixedPricing = async ({
   content,
   country,
   boxes,
+  language = 'en',
 }: {
   content: string;
   country: string;
@@ -13,6 +14,7 @@ export const cargoMixedPricing = async ({
     height: number;
     quantity?: number;
   }[];
+  language?: 'en' | 'tr';
 }) => {
   try {
     const response = await fetch('/api/functions/cargo_mixed_pricing', {
@@ -24,6 +26,7 @@ export const cargoMixedPricing = async ({
         content,
         country,
         boxes,
+        language,
       }),
     });
     

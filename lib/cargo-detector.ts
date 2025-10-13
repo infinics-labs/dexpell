@@ -8,45 +8,94 @@ export interface CargoDetectionResult {
 
 // Cargo-related keywords and phrases for detection
 const CARGO_KEYWORDS = {
-  // Shipping terms
-  shipping: ['ship', 'shipping', 'shipment', 'export', 'import', 'send', 'delivery', 'courier'],
+  // Shipping terms (English + Turkish)
+  shipping: [
+    // English
+    'ship', 'shipping', 'shipment', 'export', 'import', 'send', 'delivery', 'courier',
+    // Turkish
+    'kargo', 'gönderi', 'gönderim', 'sevkiyat', 'teslimat', 'kurye', 'gönder', 'göndermek', 'yolla', 'yollamak'
+  ],
   
-  // Cargo specific terms
-  cargo: ['cargo', 'freight', 'fak', 'general cargo', 'package', 'parcel', 'box', 'boxes'],
+  // Cargo specific terms (English + Turkish)
+  cargo: [
+    // English
+    'cargo', 'freight', 'fak', 'general cargo', 'package', 'parcel', 'box', 'boxes',
+    // Turkish
+    'kargo', 'yük', 'genel kargo', 'paket', 'kutu', 'koliler', 'koli', 'ambalaj'
+  ],
   
-  // Carriers
-  carriers: ['ups', 'dhl', 'aramex', 'fedex', 'carrier'],
+  // Carriers (same for both languages)
+  carriers: ['ups', 'dhl', 'aramex', 'fedex', 'carrier', 'taşıyıcı'],
   
-  // Destinations/geography
-  destinations: ['to', 'destination', 'country', 'city', 'germany', 'usa', 'uk', 'turkey', 'europe', 'asia'],
+  // Destinations/geography (English + Turkish)
+  destinations: [
+    // English
+    'to', 'destination', 'country', 'city', 'germany', 'usa', 'uk', 'turkey', 'europe', 'asia',
+    // Turkish
+    'ülke', 'şehir', 'almanya', 'amerika', 'ingiltere', 'türkiye', 'avrupa', 'asya', 'varış', 'hedef', 'nereye', 'hangi ülke'
+  ],
   
-  // Weight/dimensions
-  measurements: ['kg', 'kilogram', 'weight', 'heavy', 'light', 'cm', 'centimeter', 'dimension', 'size'],
+  // Weight/dimensions (English + Turkish)
+  measurements: [
+    // English
+    'kg', 'kilogram', 'weight', 'heavy', 'light', 'cm', 'centimeter', 'dimension', 'size',
+    // Turkish
+    'kg', 'kilogram', 'ağırlık', 'ağır', 'hafif', 'cm', 'santimetre', 'boyut', 'ebat', 'ölçü', 'büyüklük'
+  ],
   
-  // Pricing
-  pricing: ['price', 'cost', 'quote', 'rate', 'calculate', 'pricing', 'cheap', 'expensive'],
+  // Pricing (English + Turkish)
+  pricing: [
+    // English
+    'price', 'cost', 'quote', 'rate', 'calculate', 'pricing', 'cheap', 'expensive',
+    // Turkish
+    'fiyat', 'maliyet', 'teklif', 'ücret', 'hesapla', 'fiyatlandırma', 'ucuz', 'pahalı', 'ne kadar', 'kaç para'
+  ],
   
-  // Questions/intent
-  intent: ['how much', 'can i', 'want to', 'need to', 'looking for', 'price for']
+  // Questions/intent (English + Turkish)
+  intent: [
+    // English
+    'how much', 'can i', 'want to', 'need to', 'looking for', 'price for',
+    // Turkish
+    'ne kadar', 'istiyorum', 'ihtiyacım var', 'arıyorum', 'için fiyat', 'göndermek istiyorum', 'yollamak istiyorum'
+  ]
 };
 
 // High confidence patterns (very likely cargo conversations)
 const HIGH_CONFIDENCE_PATTERNS = [
+  // English patterns
   /\b(ship|shipping|export|import)\b.*\b(to|destination)\b/i,
   /\bgeneral cargo\b/i,
   /\b(cargo|freight)\b.*\b(price|pricing|cost|quote)\b/i,
   /\b(ups|dhl|aramex)\b.*\b(ship|shipping)\b/i,
   /\bfak\b/i, // Freight All Kinds
-  /\b(package|parcel|box)\b.*\b(to|destination)\b/i
+  /\b(package|parcel|box)\b.*\b(to|destination)\b/i,
+  
+  // Turkish patterns
+  /\b(kargo|gönderi|gönderim)\b.*\b(fiyat|teklif|ücret)\b/i,
+  /\bgenel kargo\b/i,
+  /\b(kargo|paket)\b.*\b(göndermek|yollamak)\b/i,
+  /\b(ups|dhl|aramex)\b.*\b(kargo|gönderi)\b/i,
+  /\b(paket|kutu|koli)\b.*\b(nereye|hangi ülke)\b/i,
+  /\bkargo.*istiyorum\b/i,
+  /\bgöndermek istiyorum\b/i
 ];
 
 // Medium confidence patterns
 const MEDIUM_CONFIDENCE_PATTERNS = [
+  // English patterns
   /\b(ship|send|export)\b/i,
   /\b(cargo|freight|package|parcel)\b/i,
   /\b(ups|dhl|aramex|fedex)\b/i,
   /\bhow much.*\b(ship|send|delivery)\b/i,
-  /\bweight.*\bkg\b/i
+  /\bweight.*\bkg\b/i,
+  
+  // Turkish patterns
+  /\b(kargo|gönderi|paket)\b/i,
+  /\b(gönder|göndermek|yolla|yollamak)\b/i,
+  /\b(ups|dhl|aramex|fedex)\b/i,
+  /\bne kadar.*\b(kargo|gönderi|teslimat)\b/i,
+  /\bağırlık.*\bkg\b/i,
+  /\bfiyat.*\b(kargo|gönderi)\b/i
 ];
 
 export function detectCargoConversation(message: string): CargoDetectionResult {

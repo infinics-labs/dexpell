@@ -7,6 +7,7 @@ export const cargoMultiPricing = async ({
   width,
   height,
   quantity = 1,
+  language = 'en',
 }: {
   content: string;
   country?: string;
@@ -15,6 +16,7 @@ export const cargoMultiPricing = async ({
   width?: number;
   height?: number;
   quantity?: number;
+  language?: 'en' | 'tr';
 }) => {
   try {
     const params = new URLSearchParams();
@@ -25,6 +27,7 @@ export const cargoMultiPricing = async ({
     if (width !== undefined) params.append('width', width.toString());
     if (height !== undefined) params.append('height', height.toString());
     if (quantity !== undefined) params.append('quantity', quantity.toString());
+    if (language) params.append('language', language);
 
     const response = await fetch(`/api/functions/cargo_multi_pricing?${params.toString()}`);
     
