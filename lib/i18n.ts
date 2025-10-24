@@ -153,9 +153,9 @@ export const messages: Record<SupportedLanguage, Messages> = {
           ]
         },
         arwen: {
-          name: 'Arwen',
+          name: 'Burcu',
           title: 'Ocean Freight Pricing Executive',
-          description: 'She knows the global trade lanes like the back of her hand. Arwen offers strategic, data-backed ocean freight quotes in seconds.',
+          description: 'She knows the global trade lanes like the back of her hand. Burcu offers strategic, data-backed ocean freight quotes in seconds.',
           features: [
             'FCL / LCL quotations',
             'Transit time & ETA predictions',
@@ -189,9 +189,9 @@ export const messages: Record<SupportedLanguage, Messages> = {
           ]
         },
         sofia: {
-          name: 'Sofia',
+          name: 'Selin',
           title: 'Global Customs Consultant',
-          description: "When your goods are at the border, it's already too late. Sofia predicts taxes, identifies HS codes, and flags regulatory issues — before you even ship.",
+          description: "When your goods are at the border, it's already too late. Selin predicts taxes, identifies HS codes, and flags regulatory issues — before you even ship.",
           features: [
             'HS/HTS code prediction from product details',
             'Country-specific duty & import tax calculation',
@@ -360,9 +360,9 @@ export const messages: Record<SupportedLanguage, Messages> = {
           ]
         },
         arwen: {
-          name: 'Arwen',
+          name: 'Burcu',
           title: 'Denizyolu Taşımacılığı Fiyatlandırma Sorumlusu',
-          description: 'Küresel ticaret rotalarını avucunun içi gibi biliyor. Arwen, saniyeler içinde stratejik, veri destekli deniz taşımacılığı teklifleri sunuyor.',
+          description: 'Küresel ticaret rotalarını avucunun içi gibi biliyor. Burcu, saniyeler içinde stratejik, veri destekli deniz taşımacılığı teklifleri sunuyor.',
           features: [
             'FCL / LCL teklifleri',
             'Transit süresi ve ETA tahminleri',
@@ -396,9 +396,9 @@ export const messages: Record<SupportedLanguage, Messages> = {
           ]
         },
         sofia: {
-          name: 'Sofia',
+          name: 'Selin',
           title: 'Uluslararası Gümrük Danışmanı',
-          description: 'Mallarınız sınırda olduğunda, artık çok geç. Sofia vergileri tahmin ediyor, HS kodlarını belirliyor ve düzenleyici sorunları işaretliyor - siz daha göndermeden önce.',
+          description: 'Mallarınız sınırda olduğunda, artık çok geç. Selin vergileri tahmin ediyor, HS kodlarını belirliyor ve düzenleyici sorunları işaretliyor - siz daha göndermeden önce.',
           features: [
             'Ürün detaylarından HS/HTS kod tahmini',
             'Ülkeye özel gümrük vergisi ve ithalat vergisi hesaplaması',

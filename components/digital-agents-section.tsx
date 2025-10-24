@@ -50,8 +50,8 @@ const agents: Agent[] = [
     icon: Anchor,
     iconColor: 'text-blue-600 dark:text-blue-400',
     bgGradient: 'from-blue-500/10 to-cyan-500/10',
-    available: false, // Not clickable
-    videoUrl: '/videos/arwen-intro.mp4' // Placeholder for future video
+    available: true,
+    videoUrl: '/videos/arwen-intro.mp4'
   },
   {
     key: 'elif',
@@ -74,8 +74,8 @@ const agents: Agent[] = [
     icon: Globe,
     iconColor: 'text-red-600 dark:text-red-400',
     bgGradient: 'from-red-500/10 to-rose-500/10',
-    available: false, // Not clickable
-    videoUrl: '/videos/sofia-intro.mp4' // Placeholder for future video
+    available: true,
+    videoUrl: '/videos/sofia-intro.mp4'
   }
 ];
 
@@ -142,9 +142,9 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
             {/* Agent icon and info */}
             <div className="mb-4 text-center sm:mb-6">
               <div className={`mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-white shadow-lg transition-transform group-hover:scale-110 dark:bg-gray-900 sm:mb-4 sm:size-20 overflow-hidden`}>
-                {agent.key === 'nova' ? (
+                {agent.key === 'nova' || agent.key === 'arwen' || agent.key === 'sofia' ? (
                   <img 
-                    src="/videos/nova-pp.png" 
+                    src={`/videos/${agent.key}-pp.png`}
                     alt={`${name} profile`}
                     className="w-full h-full object-cover rounded-full"
                   />
@@ -250,9 +250,9 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                     <div className={`flex size-10 sm:size-12 items-center justify-center rounded-full bg-white shadow-lg dark:bg-gray-900 shrink-0 overflow-hidden`}>
-                      {selectedAgent.key === 'nova' ? (
+                      {selectedAgent.key === 'nova' || selectedAgent.key === 'arwen' || selectedAgent.key === 'sofia' ? (
                         <img 
-                          src="/videos/nova-pp.png" 
+                          src={`/videos/${selectedAgent.key}-pp.png`}
                           alt={`${translate(language, `digitalTeam.agents.${selectedAgent.key}.name`)} profile`}
                           className="w-full h-full object-cover rounded-full"
                         />
@@ -277,7 +277,7 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
 
                 {/* Video Content */}
                 <div className="aspect-video bg-muted/20 flex items-center justify-center p-4 sm:p-8">
-                  {selectedAgent.key === 'nova' ? (
+                  {selectedAgent.key === 'nova' || selectedAgent.key === 'arwen' || selectedAgent.key === 'sofia' ? (
                     <video 
                       controls 
                       className="w-full h-full rounded-lg"
