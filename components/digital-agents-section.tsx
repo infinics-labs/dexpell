@@ -85,8 +85,8 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
 
-  // Layout: Burcu on top (first agent), then 4 agents in bottom row
-  const topAgent = agents[0]; // Burcu (Nova key)
+  // Layout: BurcuX on top (first agent), then 4 agents in bottom row
+  const topAgent = agents[0]; // BurcuX (Nova key)
   const bottomRowAgents = agents.slice(1, 5); // All other 4 agents
 
   const handleAgentClick = (agent: Agent) => {
@@ -216,7 +216,7 @@ export function DigitalAgentsSection({ language }: DigitalAgentsSectionProps) {
           </p>
         </motion.div>
 
-        {/* Top row - Burcu (centered) */}
+        {/* Top row - BurcuX (centered) */}
         <div className="mb-8 flex justify-center">
           {renderAgentCard(topAgent, 0)}
         </div>

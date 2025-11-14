@@ -13,6 +13,7 @@ function getInitialLanguage(): 'en' | 'tr' {
     const cookie = document.cookie
       .split('; ')
       .find((c) => c.startsWith('lang='));
+    
     if (cookie) {
       const value = cookie.split('=')[1];
       if (value === 'tr') return 'tr';
@@ -56,8 +57,8 @@ interface ConversationState {
 }
 
 const useConversationStore = create<ConversationState>((set, get) => {
-  // Always start with English to prevent hydration mismatch
-  const initialLanguage = 'en';
+  // Since we're using dynamic import with ssr: false, we can safely check the cookie
+  const initialLanguage = typeof window !== 'undefined' ? getInitialLanguage() : 'en';
   const initialMessage = getInitialMessage(initialLanguage);
   
   return {
@@ -101,16 +102,15 @@ const useConversationStore = create<ConversationState>((set, get) => {
     initializeLanguage: () => {
       const detectedLanguage = getInitialLanguage();
       const state = get();
-      
-      // Always update language and message on initialization
-      set({ language: detectedLanguage });
-      
-      // Update the initial message with the correct language
       const currentMode = state.assistantMode;
+      
+      // Get the correct initial message based on detected language
       const initialMessage = currentMode === 'cargo' ? getCargoInitialMessage(detectedLanguage) : getInitialMessage(detectedLanguage);
       
-      set((state) => ({
-        chatMessages: state.chatMessages.map((msg, index) => 
+      // Update both language and chat messages using the setter function form
+      set((prevState) => ({
+        language: detectedLanguage,
+        chatMessages: prevState.chatMessages.map((msg, index) => 
           index === 0 && msg.type === 'message' && msg.role === 'assistant'
             ? { ...msg, content: [{ type: "output_text", text: initialMessage }] }
             : msg

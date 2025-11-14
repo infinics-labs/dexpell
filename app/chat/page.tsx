@@ -1,8 +1,18 @@
 "use client";
-import Assistant from "@/components/assistant";
+import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useConversationStore from "@/stores/useConversationStore";
+
+// Import Assistant without SSR to avoid hydration mismatch
+const Assistant = dynamic(() => import("@/components/assistant"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
+  ),
+});
 
 export default function ChatPage() {
   const router = useRouter();

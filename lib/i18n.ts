@@ -115,7 +115,7 @@ export const messages: Record<SupportedLanguage, Messages> = {
       placeholder: "Ask about shipping costs (e.g. '5kg to Germany')...",
       wait: 'Please wait for the model to finish its response!',
       welcome: {
-        title: 'Hello! I\'m Burcu 😊',
+        title: 'Hello! I\'m BurcuX 😊',
         subtitle: 'I handle courier transportation pricing at Dexpell. Shall I calculate the most suitable price for you right away?',
       },
       suggestions: {
@@ -147,9 +147,9 @@ export const messages: Record<SupportedLanguage, Messages> = {
       clickPrompt: 'Click on any available team member to watch their introduction video',
       agents: {
         nova: {
-          name: 'Burcu',
+          name: 'BurcuX',
           title: 'Cargo Pricing Executive',
-          description: 'Agile, precise, and street-smart. Burcu handles e-commerce and courier delivery planning like no human ever could.',
+          description: 'Agile, precise, and street-smart. BurcuX handles e-commerce and courier delivery planning like no human ever could.',
           features: [
             'Last-mile cost optimization',
             'Courier service & speed analysis',
@@ -328,7 +328,7 @@ export const messages: Record<SupportedLanguage, Messages> = {
       placeholder: "Kargo maliyetlerini sorun (ör. '5kg Almanya')...",
       wait: 'Lütfen modelin yanıtını tamamlamasını bekleyin! ',
       welcome: {
-        title: 'Selam! Ben Burcu 😊',
+        title: 'Selam! Ben BurcuX 😊',
         subtitle: 'Dexpell\'de kurye taşımacılığı fiyatlandırmasını ben yapıyorum. Hemen sizin için en uygun fiyatı hesaplayayım mı?',
       },
       suggestions: {
@@ -360,9 +360,9 @@ export const messages: Record<SupportedLanguage, Messages> = {
       clickPrompt: 'Tanıtım videosunu izlemek için herhangi bir mevcut ekip üyesine tıklayın',
       agents: {
         nova: {
-          name: 'Burcu',
+          name: 'BurcuX',
           title: 'Kargo Fiyatlandırma Uzmanı',
-          description: 'Çevik, hassas ve sokak zekası olan. Burcu, e-ticaret ve kurye teslimat planlamasını hiçbir insanın yapamayacağı şekilde yönetiyor.',
+          description: 'Çevik, hassas ve sokak zekası olan. BurcuX, e-ticaret ve kurye teslimat planlamasını hiçbir insanın yapamayacağı şekilde yönetiyor.',
           features: [
             'Son kilometre maliyet optimizasyonu',
             'Kurye servisi ve hız analizi',

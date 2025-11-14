@@ -638,7 +638,7 @@ ONLY WRITE THIS EXACT TEXT:
 // Function to get cargo initial message based on language
 export function getCargoInitialMessage(language: 'en' | 'tr' = 'en'): string {
   if (language === 'tr') {
-    return `Selam! Ben Nova 😊
+    return `Selam! Ben BurcuX 😊
 Dexpell'de kurye taşımacılığı fiyatlandırmasını ben yapıyorum.
 Hemen sizin için en uygun fiyatı hesaplayayım mı?
 
@@ -647,7 +647,7 @@ Hemen sizin için en uygun fiyatı hesaplayayım mı?
 Hangi ülkeye gönderi yapmak istiyorsunuz?`;
   }
   
-  return `Hello! I'm Nova 😊
+  return `Hello! I'm BurcuX 😊
 I handle courier transportation pricing at Dexpell.
 Shall I calculate the most suitable price for you right away?
 

@@ -32,7 +32,6 @@ export function LanguageSwitcher() {
 
   const setLanguage = (value: SupportedLanguage) => {
     setLang(value);
-    setConversationLanguage(value);
     const expires = new Date(Date.now() + 365 * 24 * 3600 * 1000).toUTCString();
     document.cookie = `lang=${value}; path=/; expires=${expires}`;
     

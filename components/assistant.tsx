@@ -5,13 +5,8 @@ import useConversationStore from "@/stores/useConversationStore";
 import { Item, processMessages } from "@/lib/assistant";
 
 export default function Assistant() {
-  const { chatMessages, addConversationItem, addChatMessage, setAssistantLoading, initializeLanguage } =
+  const { chatMessages, addConversationItem, addChatMessage, setAssistantLoading } =
     useConversationStore();
-
-  // Initialize language on component mount
-  useEffect(() => {
-    initializeLanguage();
-  }, [initializeLanguage]);
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;

@@ -72,7 +72,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased mobile-viewport-fix">
+      <body className="antialiased mobile-viewport-fix" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
