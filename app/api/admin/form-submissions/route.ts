@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { resend, EMAIL_CONFIG, validateEmailConfig } from '@/lib/resend';
+import { generateShipmentNotificationHTML } from '@/lib/email-templates/shipment-notification';
 
 export async function GET(request: NextRequest) {
   try {
@@ -72,7 +74,12 @@ export async function GET(request: NextRequest) {
 // Create new form submission
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 POST /api/admin/form-submissions called');
+    console.log('🔍 Supabase Admin exists:', !!supabaseAdmin);
+    console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    
     if (!supabaseAdmin) {
+      console.error('❌ Supabase Admin not configured!');
       return NextResponse.json(
         { error: 'Supabase not configured' },
         { status: 500 }
@@ -80,6 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('📦 Received form data for:', body.sender_name, '→', body.destination);
 
     // Validate required fields
     const requiredFields = [
@@ -98,7 +106,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert form submission
-    const { data, error } = await supabaseAdmin
+    console.log('🔍 DEBUG: About to insert into Supabase...');
+    console.log('🔍 DEBUG: Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log('🔍 DEBUG: Has Service Key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    console.log('🔍 DEBUG: SupabaseAdmin type:', typeof supabaseAdmin);
+    console.log('🔍 DEBUG: Inserting data for sender:', body.sender_name);
+    
+    let data, error;
+    try {
+      const result = await supabaseAdmin
       .from('form_submissions')
       .insert({
         sender_name: body.sender_name,
@@ -135,13 +151,98 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single();
+      
+      data = result.data;
+      error = result.error;
+      
+      console.log('🔍 DEBUG: Supabase insert completed');
+      console.log('🔍 DEBUG: Has data:', !!data);
+      console.log('🔍 DEBUG: Has error:', !!error);
+    } catch (insertError: any) {
+      console.error('❌ EXCEPTION during Supabase insert:', insertError);
+      console.error('❌ EXCEPTION message:', insertError.message);
+      console.error('❌ EXCEPTION stack:', insertError.stack);
+      throw insertError;
+    }
 
     if (error) {
-      console.error('Error creating form submission:', error);
+      console.error('❌ ERROR creating form submission:', error);
+      console.error('❌ ERROR details:', JSON.stringify(error, null, 2));
+      console.error('❌ ERROR message:', error.message);
+      console.error('❌ ERROR code:', error.code);
       return NextResponse.json(
-        { error: 'Failed to create form submission' },
+        { error: 'Failed to create form submission', details: error.message },
         { status: 500 }
       );
+    }
+    
+    console.log('✅ SUCCESS: Form submission created:', data.id);
+
+    // Send email notification directly using Resend (don't block the response)
+    // We do this after the database insert succeeds
+    // This is completely optional - form will work even if email fails
+    if (process.env.RESEND_API_KEY) {
+      try {
+        // Check if email is configured
+        if (validateEmailConfig()) {
+          console.log('📧 Preparing email with form data:');
+          console.log('   Sender:', body.sender_name);
+          console.log('   Receiver:', body.receiver_name);
+          console.log('   Destination:', body.destination);
+          console.log('   Carrier:', body.selected_carrier || 'Not selected');
+          console.log('   Price:', body.cargo_price || 'Not available');
+          console.log('   Submission ID:', data.id);
+          
+          // Generate email HTML
+          const emailHTML = generateShipmentNotificationHTML({
+            senderName: body.sender_name,
+            senderTC: body.sender_tc,
+            senderAddress: body.sender_address,
+            senderContact: body.sender_contact,
+            senderPhoneCode: body.sender_phone_code,
+            receiverName: body.receiver_name,
+            receiverAddress: body.receiver_address,
+            cityPostal: body.city_postal,
+            destination: body.destination,
+            receiverContact: body.receiver_contact,
+            receiverPhoneCode: body.receiver_phone_code,
+            receiverEmail: body.receiver_email,
+            contentDescription: body.content_description,
+            contentValue: body.content_value,
+            selectedCarrier: body.selected_carrier,
+            cargoPrice: body.cargo_price,
+            serviceType: body.service_type,
+            packageQuantity: body.package_quantity,
+            totalWeight: body.total_weight,
+            chargeableWeight: body.chargeable_weight,
+            destinationCountry: body.destination_country,
+            submissionId: data.id,
+            submittedAt: data.created_at,
+          });
+
+          // Send email using Resend
+          console.log('📤 Sending email to:', EMAIL_CONFIG.to);
+          console.log('📤 From:', EMAIL_CONFIG.from);
+          console.log('📤 Subject:', `🚚 New Shipment Request - ${body.sender_name} to ${body.destination}`);
+          
+          const emailResponse = await resend.emails.send({
+            from: EMAIL_CONFIG.from,
+            to: EMAIL_CONFIG.to,
+            subject: `🚚 New Shipment Request - ${body.sender_name} to ${body.destination}`,
+            html: emailHTML,
+            replyTo: body.receiver_email,
+          });
+
+          console.log('✅ Email notification sent successfully!');
+          console.log('📧 Email ID:', emailResponse.data?.id);
+          console.log('📬 Email sent to:', EMAIL_CONFIG.to);
+        }
+      } catch (emailError) {
+        // Log the error but don't fail the form submission
+        console.error('❌ Error sending email notification:', emailError);
+      }
+    } else {
+      console.log('ℹ️  Email notifications disabled (RESEND_API_KEY not configured)');
     }
 
     return NextResponse.json({
