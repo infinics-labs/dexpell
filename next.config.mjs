@@ -25,6 +25,8 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
+  // Ensure we're using App Router properly
+  output: 'standalone',
 };
 
 export default nextConfig;
