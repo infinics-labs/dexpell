@@ -19,6 +19,12 @@ const nextConfig = {
       },
     ],
   },
+  // Set max duration for all API routes (Vercel Pro plan required for >10s)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
 };
 
 export default nextConfig;

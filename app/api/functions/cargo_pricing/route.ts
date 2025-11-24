@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { calculateUPSDHLPricing } from '@/lib/cargo-pricing-core';
 
+export const maxDuration = 60;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   

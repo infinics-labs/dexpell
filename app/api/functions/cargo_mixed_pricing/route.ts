@@ -8,6 +8,8 @@ import {
   BoxDetails 
 } from '@/lib/cargo-pricing-core';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

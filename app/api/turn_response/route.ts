@@ -4,6 +4,9 @@ import { getTools } from "@/lib/tools/tools";
 import { detectCargoInConversation } from "@/lib/cargo-detector";
 import OpenAI from "openai";
 
+// Set max duration for this route (Vercel Pro plan required for >10s)
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const { messages, toolsState, assistantMode = 'general' } = await request.json();

@@ -5,6 +5,8 @@ import path from 'path';
 // Import the shared pricing logic
 import { calculateUPSDHLPricing, calculateChargeableWeight, calculateTotalChargeableWeight } from '@/lib/cargo-pricing-core';
 
+export const maxDuration = 60;
+
 // Parse ARAMEX countries CSV
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function parseAramexCountries(): Promise<Set<string>> {
