@@ -1,5 +1,4 @@
 {
-  "installCommand": "npm ci --legacy-peer-deps --omit=optional",
   "headers": [
     {
       "source": "/api/(.*)",
