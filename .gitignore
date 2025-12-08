@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# large video files
+/public/videos/*.mp4
+!/public/videos/arwen-intro.mp4
+!/public/videos/sofia-intro.mp4
+!/public/videos/nova-cargo.mp4
