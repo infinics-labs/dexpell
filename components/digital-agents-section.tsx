@@ -43,7 +43,7 @@ const agents: Agent[] = [
     iconColor: 'text-orange-600 dark:text-orange-400',
     bgGradient: 'from-orange-500/10 to-amber-500/10',
     available: true,
-    videoUrl: '/videos/Burcu X.mp4'
+    videoUrl: 'https://fkpcgovdtwvvm6lw.public.blob.vercel-storage.com/Burcu%20X.mp4'
   },
   {
     key: 'asli',
@@ -51,7 +51,7 @@ const agents: Agent[] = [
     iconColor: 'text-purple-600 dark:text-purple-400',
     bgGradient: 'from-purple-500/10 to-pink-500/10',
     available: true,
-    videoUrl: '/videos/Aslı X (3).mp4'
+    videoUrl: 'https://fkpcgovdtwvvm6lw.public.blob.vercel-storage.com/Asl%C4%B1%20X%20%283%29.mp4'
   },
   {
     key: 'erkut',
@@ -59,7 +59,7 @@ const agents: Agent[] = [
     iconColor: 'text-green-600 dark:text-green-400',
     bgGradient: 'from-green-500/10 to-emerald-500/10',
     available: true,
-    videoUrl: '/videos/Erkut X.mp4'
+    videoUrl: 'https://fkpcgovdtwvvm6lw.public.blob.vercel-storage.com/Erkut%20X.mp4'
   },
   {
     key: 'june',
@@ -67,7 +67,7 @@ const agents: Agent[] = [
     iconColor: 'text-blue-600 dark:text-blue-400',
     bgGradient: 'from-blue-500/10 to-cyan-500/10',
     available: true,
-    videoUrl: '/videos/June X.mp4'
+    videoUrl: 'https://fkpcgovdtwvvm6lw.public.blob.vercel-storage.com/June%20X.mp4'
   },
   {
     key: 'selin',
@@ -75,7 +75,7 @@ const agents: Agent[] = [
     iconColor: 'text-red-600 dark:text-red-400',
     bgGradient: 'from-red-500/10 to-rose-500/10',
     available: true,
-    videoUrl: '/videos/Selin (1).mp4'
+    videoUrl: 'https://fkpcgovdtwvvm6lw.public.blob.vercel-storage.com/Selin%20%281%29.mp4'
   }
 ];
 
