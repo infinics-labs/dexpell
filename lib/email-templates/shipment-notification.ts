@@ -28,6 +28,11 @@ interface ShipmentNotificationEmailProps {
   totalWeight?: number;
   chargeableWeight?: number;
   destinationCountry?: string;
+  // Optional enhanced fields (if available)
+  actualWeight?: number;
+  volumetricWeight?: number;
+  calculationMethod?: string;
+  region?: string | number;
   
   // Metadata
   submissionId: string;
@@ -243,16 +248,28 @@ export function generateShipmentNotificationHTML(props: ShipmentNotificationEmai
             <span class="info-value">${props.packageQuantity} box(es)</span>
           </div>
           ` : ''}
-          ${props.totalWeight ? `
+          ${props.actualWeight ? `
           <div class="info-row">
-            <span class="info-label">Total Weight:</span>
-            <span class="info-value">${props.totalWeight} kg</span>
+            <span class="info-label">Actual Weight:</span>
+            <span class="info-value">${props.actualWeight} kg ${props.calculationMethod === 'actual' ? '✓ (Used for calculation)' : ''}</span>
+          </div>
+          ` : ''}
+          ${props.volumetricWeight ? `
+          <div class="info-row">
+            <span class="info-label">Volumetric Weight:</span>
+            <span class="info-value">${props.volumetricWeight} kg ${props.calculationMethod === 'volumetric' ? '✓ (Used for calculation)' : ''}</span>
           </div>
           ` : ''}
           ${props.chargeableWeight ? `
           <div class="info-row">
             <span class="info-label">Chargeable Weight:</span>
-            <span class="info-value">${props.chargeableWeight} kg</span>
+            <span class="info-value"><strong>${props.chargeableWeight} kg</strong></span>
+          </div>
+          ` : ''}
+          ${props.totalWeight ? `
+          <div class="info-row">
+            <span class="info-label">Total Weight:</span>
+            <span class="info-value">${props.totalWeight} kg</span>
           </div>
           ` : ''}
         </div>
@@ -269,6 +286,12 @@ export function generateShipmentNotificationHTML(props: ShipmentNotificationEmai
               <span class="info-label">Service:</span>
               <span class="info-value">${props.serviceType || 'N/A'}</span>
             </div>
+            ${props.region ? `
+            <div class="info-row">
+              <span class="info-label">Region:</span>
+              <span class="info-value">${props.region}</span>
+            </div>
+            ` : ''}
           </div>
           <div class="price-highlight">
             Total Price: $${typeof props.cargoPrice === 'number' ? props.cargoPrice.toFixed(2) : props.cargoPrice}

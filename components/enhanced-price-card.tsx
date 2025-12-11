@@ -87,7 +87,10 @@ interface CarrierQuote {
   region?: number | string;
   serviceType: string;
   actualWeight?: number;
+  volumetricWeight?: number;
   chargeableWeight?: number;
+  calculationMethod?: 'actual' | 'volumetric';
+  isDimensionalWeight?: boolean;
 }
 
 interface EnhancedPriceCardProps {
@@ -158,7 +161,11 @@ export function EnhancedPriceCard({
       to: language === 'tr' ? `${country}'ya` : `To ${country}`,
       deliveryTime: language === 'tr' ? 'Teslimat süresi:' : 'Delivery time:',
       days: language === 'tr' ? 'gün' : 'days',
-      finalPricing: language === 'tr' ? 'Fiyatlar tüm geçerli ücretleri içerir. Nihai fiyatlandırma depoda ölçüm sonrası teyit edilir.' : 'Prices include all applicable charges. Final pricing confirmed after measurement at warehouse.'
+      finalPricing: language === 'tr' ? 'Fiyatlar tüm geçerli ücretleri içerir. Nihai fiyatlandırma depoda ölçüm sonrası teyit edilir.' : 'Prices include all applicable charges. Final pricing confirmed after measurement at warehouse.',
+      actualWeight: language === 'tr' ? 'Gerçek Ağırlık' : 'Actual Weight',
+      volumetricWeight: language === 'tr' ? 'Hacimsel Ağırlık' : 'Volumetric Weight',
+      chargeableWeight: language === 'tr' ? 'Ücretlendirilen Ağırlık' : 'Chargeable Weight',
+      usedForCalculation: language === 'tr' ? 'Fiyat hesaplamasında kullanıldı' : 'Used for calculation'
     };
     return texts[key as keyof typeof texts] || key;
   };
@@ -375,29 +382,60 @@ export function EnhancedPriceCard({
                     <div className="text-sm text-gray-500">{getText('totalPrice')}</div>
                   </div>
 
-                  {/* Service details */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Truck className="w-4 h-4" />
-                      <span>{quote.serviceType}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Globe className="w-4 h-4" />
-                      <span>{getText('to')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Package className="w-4 h-4" />
-                      <span>{finalQuantity} {finalQuantity !== 1 ? getText('boxes') : getText('box')}</span>
-                    </div>
-                    {(quote.chargeableWeight || totalWeight || dimensionalAnalysis?.chargeableWeightTotal) && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Weight className="w-4 h-4" />
-                        <span>{quote.chargeableWeight || totalWeight || dimensionalAnalysis?.chargeableWeightTotal} kg total</span>
+                  {/* Weight Details */}
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {/* Actual Weight */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Scale className="w-3 h-3 text-gray-500" />
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          {getText('actualWeight')}
+                        </div>
+                        <div className={`font-semibold text-sm ${quote.calculationMethod === 'actual' ? 'text-green-600 dark:text-green-400' : ''}`}>
+                          {quote.actualWeight ? `${quote.actualWeight}kg` : '-'}
+                        </div>
+                        {quote.calculationMethod === 'actual' && (
+                          <div className="text-xs text-green-600 dark:text-green-400 mt-1">✓</div>
+                        )}
                       </div>
-                    )}
+
+                      {/* Volumetric Weight */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Ruler className="w-3 h-3 text-gray-500" />
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          {getText('volumetricWeight')}
+                        </div>
+                        <div className={`font-semibold text-sm ${quote.calculationMethod === 'volumetric' ? 'text-orange-600 dark:text-orange-400' : ''}`}>
+                          {quote.volumetricWeight ? `${quote.volumetricWeight}kg` : '-'}
+                        </div>
+                        {quote.calculationMethod === 'volumetric' && (
+                          <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">✓</div>
+                        )}
+                      </div>
+
+                      {/* Chargeable Weight */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Weight className="w-3 h-3 text-gray-500" />
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                          {getText('chargeableWeight')}
+                        </div>
+                        <div className="font-semibold text-sm text-blue-600 dark:text-blue-400">
+                          {quote.chargeableWeight ? `${quote.chargeableWeight}kg` : '-'}
+                        </div>
+                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          {getText('usedForCalculation')}
+                        </div>
+                      </div>
+                    </div>
                     
                     {/* Delivery time */}
-                    <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400 pt-2 border-t border-gray-200 dark:border-gray-700">
                       <CheckCircle className="w-4 h-4" />
                       <span>
                         {language === 'tr' 

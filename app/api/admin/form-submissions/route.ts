@@ -137,12 +137,12 @@ export async function POST(request: NextRequest) {
         status: body.status || 'pending',
         // Price card information
         selected_carrier: body.selected_carrier || null,
-        selected_quote: body.selected_quote || null,
+        selected_quote: body.selected_quote || null, // Weight details stored here as JSON
         destination_country: body.destination_country || null,
         package_quantity: body.package_quantity || null,
         total_weight: body.total_weight || null,
         price_card_timestamp: body.price_card_timestamp || null,
-        // Enhanced shipping details
+        // Basic shipping details (without new weight columns to avoid schema cache issue)
         chargeable_weight: body.chargeable_weight || null,
         cargo_price: body.cargo_price || null,
         service_type: body.service_type || null,
@@ -214,8 +214,12 @@ export async function POST(request: NextRequest) {
             serviceType: body.service_type,
             packageQuantity: body.package_quantity,
             totalWeight: body.total_weight,
+            actualWeight: body.actual_weight,
+            volumetricWeight: body.volumetric_weight,
             chargeableWeight: body.chargeable_weight,
+            calculationMethod: body.calculation_method,
             destinationCountry: body.destination_country,
+            region: body.region,
             submissionId: data.id,
             submittedAt: data.created_at,
           });

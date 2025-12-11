@@ -4,10 +4,11 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { 
   Package, 
-  Truck,
   CheckCircle,
   Globe,
-  Weight
+  Weight,
+  Scale,
+  Ruler
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -47,7 +48,10 @@ interface CarrierQuote {
   region?: number | string;
   serviceType: string;
   actualWeight?: number;
+  volumetricWeight?: number;
   chargeableWeight?: number;
+  calculationMethod?: 'actual' | 'volumetric';
+  isDimensionalWeight?: boolean;
 }
 
 interface SelectablePriceCardProps {
@@ -88,7 +92,11 @@ export function SelectablePriceCard({
       box: language === 'tr' ? 'kutu' : 'box',
       boxes: language === 'tr' ? 'kutu' : 'boxes',
       to: language === 'tr' ? `${country}'ya` : `To ${country}`,
-      selected: language === 'tr' ? 'Seçildi' : 'Selected'
+      selected: language === 'tr' ? 'Seçildi' : 'Selected',
+      actualWeight: language === 'tr' ? 'Gerçek Ağırlık' : 'Actual Weight',
+      volumetricWeight: language === 'tr' ? 'Hacimsel Ağırlık' : 'Volumetric Weight',
+      chargeableWeight: language === 'tr' ? 'Ücretlendirilen Ağırlık' : 'Chargeable Weight',
+      usedForCalculation: language === 'tr' ? 'Fiyat hesaplamasında kullanıldı' : 'Used for calculation'
     };
     return texts[key as keyof typeof texts] || key;
   };
@@ -192,29 +200,60 @@ export function SelectablePriceCard({
                     <div className="text-sm text-gray-400">{getText('totalPrice')}</div>
                   </div>
 
-                  {/* Service details */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      <Truck className="w-4 h-4" />
-                      <span>{quote.serviceType}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      <Globe className="w-4 h-4" />
-                      <span>{getText('to')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      <Package className="w-4 h-4" />
-                      <span>{finalQuantity} {finalQuantity !== 1 ? getText('boxes') : getText('box')}</span>
-                    </div>
-                    {(quote.chargeableWeight || totalWeight) && (
-                      <div className="flex items-center gap-2 text-sm text-gray-300">
-                        <Weight className="w-4 h-4" />
-                        <span>{quote.chargeableWeight || totalWeight} kg total</span>
+                  {/* Weight Details */}
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-2 p-3 bg-gray-800/50 rounded-lg">
+                      {/* Actual Weight */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Scale className="w-3 h-3 text-gray-400" />
+                        </div>
+                        <div className="text-xs text-gray-400 mb-1">
+                          {getText('actualWeight')}
+                        </div>
+                        <div className={`font-semibold text-sm ${quote.calculationMethod === 'actual' ? 'text-green-400' : 'text-gray-300'}`}>
+                          {quote.actualWeight ? `${quote.actualWeight}kg` : '-'}
+                        </div>
+                        {quote.calculationMethod === 'actual' && (
+                          <div className="text-xs text-green-400 mt-1">✓</div>
+                        )}
                       </div>
-                    )}
+
+                      {/* Volumetric Weight */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Ruler className="w-3 h-3 text-gray-400" />
+                        </div>
+                        <div className="text-xs text-gray-400 mb-1">
+                          {getText('volumetricWeight')}
+                        </div>
+                        <div className={`font-semibold text-sm ${quote.calculationMethod === 'volumetric' ? 'text-orange-400' : 'text-gray-300'}`}>
+                          {quote.volumetricWeight ? `${quote.volumetricWeight}kg` : '-'}
+                        </div>
+                        {quote.calculationMethod === 'volumetric' && (
+                          <div className="text-xs text-orange-400 mt-1">✓</div>
+                        )}
+                      </div>
+
+                      {/* Chargeable Weight */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Weight className="w-3 h-3 text-gray-400" />
+                        </div>
+                        <div className="text-xs text-gray-400 mb-1">
+                          {getText('chargeableWeight')}
+                        </div>
+                        <div className="font-semibold text-sm text-blue-400">
+                          {quote.chargeableWeight ? `${quote.chargeableWeight}kg` : '-'}
+                        </div>
+                        <div className="text-xs text-blue-400 mt-1">
+                          {getText('usedForCalculation')}
+                        </div>
+                      </div>
+                    </div>
                     
                     {/* Delivery time */}
-                    <div className="flex items-center gap-2 text-sm font-medium text-green-400 mt-3 pt-3 border-t border-gray-600">
+                    <div className="flex items-center gap-2 text-sm font-medium text-green-400 pt-2 border-t border-gray-600">
                       <CheckCircle className="w-4 h-4" />
                       <span>
                         {language === 'tr' 

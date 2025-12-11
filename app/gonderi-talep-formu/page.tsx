@@ -240,12 +240,12 @@ export default function ShipmentRequestForm() {
           status: 'pending',
           // Include price card information
           selected_carrier: selectedCarrier,
-          selected_quote: selectedQuote,
+          selected_quote: selectedQuote, // Full quote with all weight details stored as JSON
           destination_country: currentPriceCardData?.country,
           package_quantity: currentPriceCardData?.quantity,
           total_weight: currentPriceCardData?.totalWeight,
           price_card_timestamp: currentPriceCardData?.timestamp,
-          // Enhanced shipping details
+          // Basic shipping details
           chargeable_weight: selectedQuote?.chargeableWeight,
           cargo_price: selectedQuote?.totalPrice,
           service_type: selectedQuote?.serviceType

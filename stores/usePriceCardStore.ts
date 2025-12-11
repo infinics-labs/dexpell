@@ -8,7 +8,10 @@ export interface CarrierQuote {
   region?: number | string;
   serviceType: string;
   actualWeight?: number;
+  volumetricWeight?: number;
   chargeableWeight?: number;
+  calculationMethod?: 'actual' | 'volumetric';
+  isDimensionalWeight?: boolean;
 }
 
 export interface PriceCardData {
